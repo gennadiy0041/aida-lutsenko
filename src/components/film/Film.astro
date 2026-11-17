@@ -25,7 +25,7 @@ const { variant } = Astro.props;
   preload={[notoLatin]}
   noindex={Boolean(variant)}
 >
-  <a class="credit skip" href="#quarry"><T t={{ en: 'Skip the titles', ru: 'Пропустить титры' }} /></a>
+  <a class="credit skip" href="#quarry"><T t={{ en: 'Skip the titles', ru: 'Пропустить вступление' }} /></a>
   <main class="v1 film film--v1" id="top">
     <Titles />
     <FilmBody variant={variant} />

@@ -57,10 +57,18 @@ const themeColor = theme === 'light' ? '#f1eadc' : '#0b0a09';
     <script is:inline define:vars={{ titleRu: title.ru, titleEn: title.en }}>
       (function () {
         var d = document.documentElement;
+        var q = null;
         try {
-          var q = new URLSearchParams(location.search).get('lang');
-          var s = q || localStorage.getItem('lang');
-          if (s === 'ru' || s === 'en') d.lang = s;
+          q = new URLSearchParams(location.search).get('lang');
+        } catch (e) {}
+        if (q !== 'ru' && q !== 'en') q = null;
+        if (q) d.lang = q;
+        try {
+          if (q) localStorage.setItem('lang', q);
+          else {
+            var s = localStorage.getItem('lang');
+            if (s === 'ru' || s === 'en') d.lang = s;
+          }
         } catch (e) {}
         if (d.lang === 'ru') document.title = titleRu;
         document.addEventListener('langchange', function (e) {
@@ -84,6 +92,11 @@ const themeColor = theme === 'light' ? '#f1eadc' : '#0b0a09';
         document.querySelectorAll<HTMLImageElement>('img[data-alt-ru]').forEach((img) => {
           if (!img.dataset.altEn) img.dataset.altEn = img.alt;
           img.alt = root.lang === 'ru' ? img.dataset.altRu! : img.dataset.altEn!;
+        });
+        // the same for accessible names that are not visible text
+        document.querySelectorAll<HTMLElement>('[data-label-ru]').forEach((el) => {
+          if (!el.dataset.labelEn) el.dataset.labelEn = el.getAttribute('aria-label') ?? '';
+          el.setAttribute('aria-label', root.lang === 'ru' ? el.dataset.labelRu! : el.dataset.labelEn!);
         });
       };
       swapAlts();

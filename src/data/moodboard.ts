@@ -165,7 +165,7 @@ export const board = {
   /** The pull-line beside plate 05, one item per line. */
   pull: {
     en: ['And black,', 'worn like a signature.'],
-    ru: ['И чёрный —', 'как подпись.'],
+    ru: ['И чёрное —', 'как подпись.'],
   },
   /** The way back to the film: beside the name in the top row, and above the closing link. */
   film: { en: 'The film', ru: 'Фильм' } as L,

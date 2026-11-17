@@ -9,7 +9,8 @@
  */
 import Frame from '../Frame.astro';
 import T from '../T.astro';
-import type { Chapter } from '../../data/film';
+import { credits, type Chapter } from '../../data/film';
+import { typoEn, typoRu } from '../../data/typo';
 
 interface Props {
   chapter: Chapter;
@@ -20,6 +21,8 @@ let beat = 0;
 const scenes = c.scenes.map((s) => ({ ...s, lines: s.lines.map((line) => ({ line, beat: beat++ })) }));
 const beats = beat;
 const two = (n: number) => String(n).padStart(2, '0');
+/** A subtitle breaks between sentences first: each sentence is one unit that prefers to stay whole. */
+const sentences = (s: string) => s.split(/(?<=[.?!])\s+/);
 ---
 
 <section class="ch" id={c.id} data-chapter={c.numeral} aria-labelledby={`ch-${c.id}`}>
@@ -48,7 +51,20 @@ const two = (n: number) => String(n).padStart(2, '0');
             <div class="ch__subs">
               {s.lines.map(({ line, beat }) => (
                 <p class:list={['ch__sub', beat === 0 && 'is-on']} data-beat={beat} data-reveal="sub">
-                  <T t={line} />
+                  <span data-l="en" lang="en">
+                    {sentences(line.en).map((s) => (
+                      <>
+                        <span class="ch__seg">{typoEn(s)}</span>{' '}
+                      </>
+                    ))}
+                  </span>
+                  <span data-l="ru" lang="ru">
+                    {sentences(line.ru).map((s) => (
+                      <>
+                        <span class="ch__seg">{typoRu(s)}</span>{' '}
+                      </>
+                    ))}
+                  </span>
                 </p>
               ))}
             </div>
@@ -72,8 +88,16 @@ const two = (n: number) => String(n).padStart(2, '0');
     </dl>
     {
       c.link && (
-        <a class="credit ch__link" href={c.link.href} target="_blank" rel="noopener" data-reveal>
+        <a
+          class="credit ch__link"
+          href={c.link.href}
+          hreflang={c.link.hreflang}
+          target="_blank"
+          rel="noopener"
+          data-reveal
+        >
           <T t={c.link.label} />
+          <span class="sr-only"><T t={credits.newTab} /></span>
           <span class="ch__arrow" aria-hidden="true" />
         </a>
       )

@@ -17,7 +17,7 @@ if (hero && 'IntersectionObserver' in window) {
 }
 
 // the running head comes back when the reader scrolls up, and leaves when the film plays on
-let lastY = window.scrollY;
+let anchorY = window.scrollY;
 let ticking = false;
 window.addEventListener(
   'scroll',
@@ -25,11 +25,18 @@ window.addEventListener(
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
-      const y = window.scrollY;
-      if (y < lastY - 6) root.classList.add('hud-on');
-      else if (y > lastY + 6) root.classList.remove('hud-on');
-      lastY = y;
       ticking = false;
+      const y = window.scrollY;
+      const shown = root.classList.contains('hud-on');
+      // the anchor follows the scroll while it keeps its direction; a turn is measured from it
+      if (shown ? y < anchorY : y > anchorY) anchorY = y;
+      else if (!shown && anchorY - y > 24) {
+        root.classList.add('hud-on');
+        anchorY = y;
+      } else if (shown && y - anchorY > 12) {
+        root.classList.remove('hud-on');
+        anchorY = y;
+      }
     });
   },
   { passive: true },
@@ -46,17 +53,20 @@ const paintChapter = () => {
   if (hudChapter) hudChapter.textContent = current ? chapterLabel(current) : '';
 };
 if (hudChapter && 'IntersectionObserver' in window) {
+  const all = Array.from(document.querySelectorAll('.ch'));
+  const live = new Set<Element>();
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
-        if (e.isIntersecting) current = e.target;
-        else if (current === e.target) current = null;
+        if (e.isIntersecting) live.add(e.target);
+        else live.delete(e.target);
       }
+      current = all.find((c) => live.has(c)) ?? null;
       paintChapter();
     },
     { rootMargin: '-45% 0px -45% 0px' },
   );
-  document.querySelectorAll('.ch').forEach((ch) => io.observe(ch));
+  all.forEach((ch) => io.observe(ch));
   document.addEventListener('langchange', paintChapter);
 }
 
@@ -70,7 +80,9 @@ const reels = Array.from(document.querySelectorAll<HTMLElement>('[data-reel]')).
   beat: 0,
 }));
 
-if (motion && reels.length && CSS.supports('height', '100svh')) {
+const roomy = window.matchMedia('(min-height: 420px)');
+
+if (motion && reels.length && roomy.matches && CSS.supports('height', '100svh')) {
   root.classList.add('reel');
 
   const update = () => {
@@ -100,12 +112,47 @@ if (motion && reels.length && CSS.supports('height', '100svh')) {
     });
   };
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
   update();
+
+  // every height here is in viewport units, so a resize or a rotation would throw the reader
+  // into another chapter: remember the part under the top edge and how far through it we are
+  const parts = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-titles], .ch__card, .ch__reel, .ch__end, .cr'),
+  );
+  let place: { el: HTMLElement; f: number } | null = null;
+  const remember = () => {
+    for (const el of parts) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom > 1) {
+        place = { el, f: r.height > 0 ? Math.min(1, Math.max(0, -r.top / r.height)) : 0 };
+        return;
+      }
+    }
+  };
+  window.addEventListener('scroll', remember, { passive: true });
+  remember();
+  let lastW = window.innerWidth;
+  window.addEventListener('resize', () => {
+    // the mobile address bar changes the height only: that is not a new shape
+    if (window.innerWidth === lastW) return onScroll();
+    lastW = window.innerWidth;
+    const p = place;
+    if (p) {
+      const r = p.el.getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + r.top + p.f * r.height, behavior: 'instant' as ScrollBehavior });
+    }
+    onScroll();
+  });
 
   // the page just got taller: a link straight to a chapter has to land again
   if (location.hash.length > 1) {
-    document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
+    let target: HTMLElement | null = null;
+    try {
+      target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    } catch {
+      /* a malformed hash is not a reason to stop */
+    }
+    target?.scrollIntoView();
   }
 }
 
@@ -142,6 +189,8 @@ async function startMotion() {
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
+    const onLightbox = (e: Event) => ((e as CustomEvent<boolean>).detail ? lenis.stop() : lenis.start());
+    document.addEventListener('lightbox', onLightbox);
 
     // progress of the film along the top edge
     const bar = document.querySelector('.progress__bar');
@@ -165,6 +214,7 @@ async function startMotion() {
     }
 
     return () => {
+      document.removeEventListener('lightbox', onLightbox);
       gsap.ticker.remove(raf);
       lenis.destroy();
     };

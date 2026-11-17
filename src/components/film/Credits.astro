@@ -29,7 +29,7 @@ const items = await Promise.all(
       credits.roles.map((r) => (
         <div class="cr__row" data-reveal>
           <dt class="credit"><T t={r.role} /></dt>
-          <dd><T t={r.detail} /></dd>
+          <dd>{[r.detail].flat().map((d) => <span class="cr__line"><T t={d} /></span>)}</dd>
         </div>
       ))
     }
@@ -41,13 +41,16 @@ const items = await Promise.all(
       {
         items.map((a, i) => (
           <li class="cr__award" style={`--r:${a.ratio.toFixed(3)}`} data-reveal>
-            <button
-              type="button"
+            <a
               class="cr__scan"
-              data-award={a.large}
+              href={a.large}
+              data-award
               data-w={a.image.width}
               data-h={a.image.height}
-              aria-haspopup="dialog"
+              data-cap-en={`${a.title.en}. ${a.from.en}, ${a.year}`}
+              data-cap-ru={`${a.title.ru}. ${a.from.ru}, ${a.year}`}
+              aria-label={`Open the scan: ${a.title.en}, ${a.year}`}
+              data-label-ru={`Открыть скан: ${a.title.ru}, ${a.year}`}
             >
               <Picture
                 src={a.image}
@@ -55,12 +58,11 @@ const items = await Promise.all(
                 widths={[160, 240, 360, 480, 720]}
                 sizes={`(max-width: 767px) ${Math.round(a.ratio * 42)}vw, ${Math.round(a.ratio * 14)}vw`}
                 quality={70}
-                alt={`${a.title.en}. ${a.from.en}, ${a.year}`}
-                data-alt-ru={`${a.title.ru}. ${a.from.ru}, ${a.year}`}
+                alt=""
                 loading="lazy"
                 decoding="async"
               />
-            </button>
+            </a>
             <span class="credit cr__no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
           </li>
         ))
@@ -84,8 +86,9 @@ const items = await Promise.all(
   <div class="cr__pair">
     <div class="cr__block">
       <h3 class="credit cr__label" data-reveal><T t={credits.pressHeading} /></h3>
-      <a class="cr__press" href={credits.press.href} target="_blank" rel="noopener" data-reveal>
+      <a class="cr__press" href={credits.press.href} hreflang="ru" target="_blank" rel="noopener" data-reveal>
         <span class="cr__press-title"><T t={credits.press.title} /></span>
+        <span class="sr-only"><T t={credits.newTab} /></span>
         <span class="credit cr__press-meta">{credits.press.outlet}<i aria-hidden="true"></i><T t={credits.press.date} /></span>
       </a>
     </div>
@@ -97,6 +100,7 @@ const items = await Promise.all(
         <li data-reveal>
           <a class="cr__contact" href={person.instagram.url} target="_blank" rel="noopener me">
             <span class="credit">Instagram</span> {person.instagram.handle}
+            <span class="sr-only"><T t={credits.newTab} /></span>
           </a>
         </li>
         <li data-reveal><a class="credit cr__more" href="/moodboard"><T t={credits.moodboard} /><span class="ch__arrow" aria-hidden="true"></span></a></li>
@@ -114,12 +118,14 @@ const items = await Promise.all(
     <a class="credit" href="#top"><T t={credits.again} /></a>
   </footer>
 
-  <dialog class="lb" id="lightbox" aria-label="Award scan" data-lenis-prevent>
+  <dialog class="lb" id="lightbox" aria-labelledby="lightbox-cap" data-lenis-prevent>
     <form method="dialog" class="lb__bar">
       <p class="credit lb__cap" id="lightbox-cap"></p>
       <button class="credit lb__close" value="close"><T t={credits.close} /></button>
     </form>
-    <div class="lb__stage"><img class="lb__img" alt="" decoding="async" /></div>
+    <div class="lb__stage">
+      <img class="lb__img" alt="Scan of the document" data-alt-ru="Скан документа" decoding="async" />
+    </div>
   </dialog>
 </section>
 
@@ -130,16 +136,25 @@ const items = await Promise.all(
     const cap = dialog.querySelector<HTMLElement>('#lightbox-cap')!;
     let opener: HTMLElement | null = null;
 
-    document.querySelectorAll<HTMLButtonElement>('[data-award]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const thumb = btn.querySelector('img');
-        opener = btn;
-        img.width = Number(btn.dataset.w);
-        img.height = Number(btn.dataset.h);
-        img.src = btn.dataset.award!;
-        img.alt = thumb?.alt ?? '';
-        cap.textContent = thumb?.alt ?? '';
+    const root = document.documentElement;
+    const setOpen = (open: boolean) => {
+      root.classList.toggle('lb-open', open);
+      document.dispatchEvent(new CustomEvent('lightbox', { detail: open }));
+    };
+
+    // without JavaScript, or where <dialog> is missing, the link simply opens the scan
+    document.querySelectorAll<HTMLAnchorElement>('a[data-award]').forEach((link) => {
+      link.setAttribute('aria-haspopup', 'dialog');
+      link.addEventListener('click', (e) => {
+        if (typeof dialog.showModal !== 'function' || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        opener = link;
+        img.width = Number(link.dataset.w);
+        img.height = Number(link.dataset.h);
+        img.src = link.href;
+        cap.textContent = (root.lang === 'ru' ? link.dataset.capRu : link.dataset.capEn) ?? '';
         dialog.showModal();
+        setOpen(true);
       });
     });
     // a click on the backdrop (outside the picture and the bar) closes the scan
@@ -148,7 +163,8 @@ const items = await Promise.all(
     });
     dialog.addEventListener('close', () => {
       img.removeAttribute('src');
-      opener?.focus();
+      setOpen(false);
+      opener?.focus({ preventScroll: true });
     });
   }
 </script>

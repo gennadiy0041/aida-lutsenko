@@ -542,6 +542,9 @@ a:hover > .ch__arrow {
   margin-top: 1.5rem;
   opacity: 0.6;
 }
+html:not(.motion):not(.still) .cr__hint {
+  display: none;
+}
 
 .cr__pair {
   display: grid;
@@ -581,7 +584,7 @@ a:hover > .ch__arrow {
 }
 .cr__contact {
   display: inline-block;
-  padding: 0.3rem 0;
+  padding: 0.55rem 0;
   font-family: var(--font-display);
   font-weight: 300;
   font-size: clamp(1.25rem, 2.3vw, 2.3rem);
@@ -635,7 +638,10 @@ a:hover > .ch__arrow {
   border-top: 1px solid var(--rule);
 }
 .cr__foot a {
-  padding: 0.75rem 0;
+  padding: 0.95rem 0;
+}
+.cr__foot .credit {
+  white-space: nowrap;
 }
 
 /* ---------- credits per language ---------- */
@@ -773,7 +779,21 @@ a:hover > .ch__arrow {
 }
 .lb[open] {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+.lb {
+  overscroll-behavior: contain;
+}
+.lb__bar,
+.lb__stage {
+  min-width: 0;
+}
+/* the film does not scroll behind an open scan */
+html.lb-open,
+html:has(.lb[open]) {
+  overflow: hidden;
 }
 .lb .credit {
   color: var(--color-ivory);
@@ -840,8 +860,14 @@ a:hover > .ch__arrow {
 .film--v2 .hud {
   background: var(--color-ivory);
 }
-html.past-titles.hud-on .hud,
-html.past-titles .hud:focus-within {
+html.past-titles.hud-on .hud {
+  visibility: visible;
+  transform: none;
+  transition:
+    transform 0.6s var(--ease-film),
+    visibility 0s;
+}
+html.past-titles .hud:has(:focus-visible) {
   visibility: visible;
   transform: none;
   transition:
@@ -930,17 +956,12 @@ html.reel .film--v1 .ch__scene {
   grid-template-rows: minmax(var(--bar), 1fr) auto minmax(var(--bar), 1fr);
   margin: 0;
   opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 1.2s var(--ease-cut),
-    visibility 0s linear 1.2s;
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-cut);
 }
 html.reel .film--v1 .ch__scene.is-on {
   opacity: 1;
-  visibility: visible;
-  transition:
-    opacity 1.2s var(--ease-cut),
-    visibility 0s;
+  pointer-events: auto;
 }
 html.reel .film--v1 .ch__frame {
   grid-row: 2;
@@ -956,7 +977,7 @@ html.reel .film--v1 .ch__reel .ch__subs {
 }
 html.reel .film--v1 .ch__reel .ch__sub {
   grid-area: 1 / 1;
-  max-width: 46rem;
+  max-width: 48rem;
   color: var(--color-ivory);
   opacity: 0;
   transition: opacity 0.4s var(--ease-cut);
@@ -1009,4 +1030,48 @@ html.reel .film--v1 .ch__count {
   min-height: 100svh;
   align-content: center;
   padding-block: var(--bar, 6rem);
+}
+
+.cr__line {
+  display: block;
+}
+
+/* a subtitle breaks between its sentences first */
+.ch__seg {
+  display: inline-block;
+}
+
+/* the running head and the projector's own labels never show at once */
+html.reel .film--v1 .ch__tag,
+html.reel .film--v1 .ch__count {
+  transition: opacity 0.3s linear;
+}
+html.past-titles.hud-on .film--v1 .ch__tag,
+html.past-titles.hud-on .film--v1 .ch__count {
+  opacity: 0;
+}
+
+/* the lightbox on phones: the caption wraps instead of running off the screen */
+@media (max-width: 767px) {
+  .lb__cap {
+    white-space: normal;
+    overflow: visible;
+    text-wrap: balance;
+  }
+  .lb__bar {
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+/* the smallest phones */
+@media (max-width: 400px) {
+  .cr__foot .credit {
+    letter-spacing: 0.22em;
+    font-size: 0.625rem;
+  }
+  .cr__foot i {
+    width: 0.75rem;
+    margin-inline: 0.5em;
+  }
 }

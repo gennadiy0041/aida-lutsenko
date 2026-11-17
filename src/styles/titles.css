@@ -1,7 +1,7 @@
 /* Opening titles (the first screen): a letterboxed 2.39:1 frame and the name as an optical title. */
 
 .v1 {
-  --bar: clamp(4rem, 13svh, 9.5rem);
+  --bar: clamp(4rem, 11svh, 9.5rem);
   --pad: clamp(1.25rem, 3.4vw, 3.75rem);
   --tracking: 0.2em;
 }
@@ -25,6 +25,9 @@
 }
 .v1-stage {
   position: relative;
+  /* the letters fly in from outside the frame: they must never widen the page */
+  overflow: hidden;
+  overflow: clip;
   container-type: inline-size;
   width: min(100vw, calc((100svh - 2 * var(--bar)) * 2.39));
   margin-inline: auto;
@@ -171,7 +174,7 @@
     align-items: center;
   }
   .v1 {
-    --bar-bottom: calc(8.5rem + env(safe-area-inset-bottom));
+    --bar-bottom: calc(9.25rem + env(safe-area-inset-bottom));
   }
   .v1-hero {
     grid-template-rows: var(--bar) minmax(0, 1fr) var(--bar-bottom);
@@ -186,19 +189,32 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   .v1-billing a {
-    padding: 0.42rem 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
   }
   .v1-cue {
-    padding-block: 0.5rem;
+    min-height: 44px;
+    padding-block: 0;
+  }
+  .v1-bar--bottom .credit {
+    white-space: nowrap;
   }
   .v1-chapters {
     grid-column: 1 / -1;
     grid-row: 1;
   }
+  /* two by two: I and III on the left margin, II and IV on the right */
   .v1-billing {
+    display: grid;
+    grid-template-columns: auto auto;
     justify-content: space-between;
     gap: 0 0.75rem;
     font-size: 0.625rem;
+  }
+  .v1-billing li:nth-child(even) {
+    justify-self: end;
   }
   /* the name sits in the upper third, above the figure */
   .v1-title {
@@ -256,4 +272,26 @@ html.motion.intro-skip .v1-fade {
   45% { transform: scaleY(1); transform-origin: 50% 0; }
   55% { transform: scaleY(1); transform-origin: 50% 100%; }
   100% { transform: scaleY(0); transform-origin: 50% 100%; }
+}
+
+/* the smallest phones: keep every row of small capitals on one line */
+@media (max-width: 400px) {
+  .v1-bar .credit,
+  .v1-billing {
+    letter-spacing: 0.22em;
+  }
+  .v1-dash {
+    width: 0.75rem;
+    margin-inline: 0.5em;
+  }
+}
+
+/* phones on their side and other very short screens: the whole letterbox still fits */
+@media (orientation: landscape) and (max-height: 520px) {
+  .v1 {
+    --bar: 3rem;
+  }
+  .v1-hero {
+    min-height: 0;
+  }
 }

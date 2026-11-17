@@ -51,8 +51,8 @@ const hasVideo = Boolean(video.wide || video.tall);
 
     <div class="v1-title" data-titles-name>
       <h1 id="v1-name" class="v1-name">
-        <span data-l="en" lang="en"><Letters text={person.name.en.toUpperCase()} /></span>
-        <span data-l="ru" lang="ru"><Letters text={person.name.ru.toUpperCase()} /></span>
+        <span data-l="en" lang="en"><Letters text={person.name.en.toUpperCase()} label={person.name.en} /></span>
+        <span data-l="ru" lang="ru"><Letters text={person.name.ru.toUpperCase()} label={person.name.ru} /></span>
       </h1>
     </div>
   </div>
@@ -61,7 +61,7 @@ const hasVideo = Boolean(video.wide || video.tall);
     <p class="credit v1-place v1-fade" style="--d:2.4s">
       <T t={titles.place} /><span class="v1-dash" aria-hidden="true"></span>{titles.years}
     </p>
-    <nav class="v1-chapters" aria-label="Chapters">
+    <nav class="v1-chapters" aria-label="Chapters" data-label-ru="Главы">
       <ol class="v1-billing credit">
         {
           chapters.map((c, i) => (
@@ -92,19 +92,27 @@ const hasVideo = Boolean(video.wide || video.tall);
     };
     const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
     events.forEach((e) => window.addEventListener(e, skip, { passive: true }));
-    window.setTimeout(() => events.forEach((e) => window.removeEventListener(e, skip)), 5000);
+    // after five seconds the intro is over: lock its end state so a language switch does not replay it
+    window.setTimeout(skip, 5000);
   }
 
   // the loop is fetched only after the page has loaded, and only when motion is welcome
   const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
   if (video && root.classList.contains('motion')) {
     const phone = window.matchMedia('(max-width: 767px) and (orientation: portrait)');
+    let visible = true;
+    const sync = () => {
+      if (!video.currentSrc) return;
+      if (visible && !document.hidden) void video.play().catch(() => {});
+      else video.pause();
+    };
     const start = () => {
       const src = phone.matches ? video.dataset.tall : (video.dataset.wide ?? video.dataset.tall);
       if (!src) return;
       video.src = src;
       video.load();
       video.addEventListener('canplay', () => {
+        if (!visible || document.hidden) return;
         video.play().then(
           () => video.classList.add('is-playing'),
           () => {
@@ -119,9 +127,9 @@ const hasVideo = Boolean(video.wide || video.tall);
       else window.addEventListener('load', () => window.setTimeout(start, 600), { once: true });
     }
     new IntersectionObserver(([e]) => {
-      if (!video.classList.contains('is-playing')) return;
-      if (e.isIntersecting) void video.play().catch(() => {});
-      else video.pause();
+      visible = e.isIntersecting;
+      sync();
     }).observe(video);
+    document.addEventListener('visibilitychange', sync);
   }
 </script>

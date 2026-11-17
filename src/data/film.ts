@@ -37,7 +37,7 @@ export interface Chapter {
   years: string;
   scenes: Scene[];
   facts: Fact[];
-  link?: { href: string; label: L };
+  link?: { href: string; label: L; hreflang?: string };
 }
 
 export const chapters: Chapter[] = [
@@ -63,7 +63,7 @@ export const chapters: Chapter[] = [
         move: 'push',
         lines: [
           { en: 'Stone in. Crushed stone out. Six years.', ru: 'На входе — камень. На выходе — щебень. Шесть лет.' },
-          { en: 'Its director, meanwhile, is writing a dissertation.', ru: 'А директор тем временем пишет диссертацию.' },
+          { en: 'The director, meanwhile, is writing a dissertation.', ru: 'А директор тем временем пишет диссертацию.' },
         ],
       },
     ],
@@ -76,6 +76,7 @@ export const chapters: Chapter[] = [
     link: {
       href: 'https://www.7152.kz/news/3744549/v-sko-devuska-rukovodit-prakticeski-polnostu-muzskim-kollektivom',
       label: { en: 'Read the profile on 7152.kz (in Russian)', ru: 'Читать материал на 7152.kz' },
+      hreflang: 'ru',
     },
   },
   {
@@ -83,7 +84,7 @@ export const chapters: Chapter[] = [
     numeral: 'II',
     title: { en: 'Science', ru: 'Наука' },
     slug: { en: 'Int. Satbayev University — Almaty', ru: 'Инт. Satbayev University — Алматы' },
-    years: '2019 — 2025',
+    years: '2019 —',
     scenes: [
       {
         frame: 'f04',
@@ -99,7 +100,7 @@ export const chapters: Chapter[] = [
         slate: '05',
         move: 'pan-left',
         lines: [
-          { en: 'Now: nano-modified bitumen binders, for construction.', ru: 'Сейчас — наномодифицированные битумные вяжущие. Для строительства.' },
+          { en: 'Now: nano-modified bitumen binders, for construction.', ru: 'Сейчас — наномодифицированные битумные вяжущие.' },
           { en: 'But a paper on a shelf builds nothing.', ru: 'Но статья на полке ничего не строит.' },
         ],
       },
@@ -133,7 +134,7 @@ export const chapters: Chapter[] = [
         slate: '07',
         move: 'pan-right',
         lines: [
-          { en: 'Enactus Kazakhstan 2026: TOP-5 Best Advisors.', ru: 'Enactus Kazakhstan 2026 — TOP-5 Best Advisors.' },
+          { en: 'Enactus Kazakhstan 2026: Top 5 Best Advisors.', ru: 'Enactus Kazakhstan 2026 — Top 5 Best Advisors.' },
           { en: 'Stone. Bitumen. Next material: code.', ru: 'Камень. Битум. Следующий материал — код.' },
         ],
       },
@@ -141,8 +142,8 @@ export const chapters: Chapter[] = [
     facts: [
       { label: { en: 'Role', ru: 'Роль' }, value: { en: 'Director, Commercialization Office', ru: 'Директор Офиса коммерциализации' } },
       { label: { en: 'University', ru: 'Университет' }, value: { en: 'A. Myrzakhmetov Kokshetau University', ru: 'Кокшетауский университет им. А. Мырзахметова' } },
-      { label: { en: 'Brief', ru: 'Задача' }, value: { en: 'Science into the real sector. Partnerships with enterprises', ru: 'Наука — в реальный сектор. Партнёрства с предприятиями' } },
-      { label: { en: 'Recognition', ru: 'Признание' }, value: { en: 'Enactus Kazakhstan 2026, TOP-5 Best Advisors', ru: 'Enactus Kazakhstan 2026, TOP-5 Best Advisors' } },
+      { label: { en: 'Brief', ru: 'Задача' }, value: { en: 'Research into industry. Partnerships with companies', ru: 'Наука — в реальный сектор. Партнёрства с предприятиями' } },
+      { label: { en: 'Recognition', ru: 'Признание' }, value: { en: 'Enactus Kazakhstan 2026, Top 5 Best Advisors', ru: 'Enactus Kazakhstan 2026, Top 5 Best Advisors' } },
     ],
   },
   {
@@ -167,15 +168,15 @@ export const chapters: Chapter[] = [
         slate: '09',
         move: 'pan-left',
         lines: [
-          { en: 'Top 10 of the final. Next: IVL Cup 2026, application submitted.', ru: 'Топ-10 финала. Дальше — IVL Cup 2026: заявка подана.' },
-          { en: 'She vibe-codes. The rest of the crew: AI tools.', ru: 'Она вайб-кодит. Остальной коллектив — ИИ-инструменты.' },
+          { en: 'Top 10 in the final. Next: IVL Cup 2026, application submitted.', ru: 'Топ-10 финала. Дальше — IVL Cup 2026: заявка подана.' },
+          { en: 'She vibe-codes. This crew is almost all AI tools.', ru: 'Она вайб-кодит. В команде — почти одни ИИ-инструменты.' },
         ],
       },
     ],
     facts: [
       { label: { en: 'Role', ru: 'Роль' }, value: { en: 'Leads the project and its commercialization', ru: 'Ведёт проект и его коммерциализацию' } },
       { label: { en: 'Built at', ru: 'Где собран' }, value: { en: 'Business Cup 2.0 (Zimran × AIESEC)', ru: 'Business Cup 2.0 (Zimran × AIESEC)' } },
-      { label: { en: 'Result', ru: 'Результат' }, value: { en: 'MVP in 24 hours. Top 10 of the final', ru: 'MVP за 24 часа. Топ-10 финала' } },
+      { label: { en: 'Result', ru: 'Результат' }, value: { en: 'MVP in 24 hours. Top 10 in the final', ru: 'MVP за 24 часа. Топ-10 финала' } },
       { label: { en: 'Overrule’s headline', ru: 'Заголовок Overrule' }, value: { en: 'AI does the work. You get paid for the judgment.', ru: 'AI does the work. You get paid for the judgment.' } },
     ],
     link: {
@@ -198,7 +199,7 @@ export const awards: Award[] = [
   {
     id: 'minister-2026',
     image: minister,
-    title: { en: 'Certificate of Honour', ru: 'Құрмет грамотасы' },
+    title: { en: 'Certificate of Honour', ru: 'Почётная грамота (Құрмет грамотасы)' },
     from: {
       en: 'Minister of Science and Higher Education of Kazakhstan, Sayasat Nurbek',
       ru: 'Министр науки и высшего образования РК Саясат Нурбек',
@@ -215,7 +216,7 @@ export const awards: Award[] = [
   {
     id: 'enactus-top5-2026',
     image: enactus,
-    title: { en: 'TOP-5 Best Advisors', ru: 'TOP-5 Best Advisors' },
+    title: { en: 'Top 5 Best Advisors', ru: 'Top 5 Best Advisors' },
     from: { en: 'Enactus Kazakhstan National Expo', ru: 'Enactus Kazakhstan National Expo' },
     year: '2026',
   },
@@ -245,15 +246,22 @@ export const awards: Award[] = [
 export const credits = {
   heading: { en: 'Credits', ru: 'Титры' } as L,
   roles: [
-    { role: { en: 'Starring', ru: 'В главной роли' }, detail: { en: 'Aida Lutsenko, as herself', ru: 'Аида Луценко — в роли самой себя' } },
+    { role: { en: 'Starring', ru: 'В главной роли' }, detail: { en: 'Aida Lutsenko, as herself', ru: 'Аида Луценко — играет саму себя' } },
     { role: { en: 'General Director', ru: 'Генеральный директор' }, detail: { en: 'Kazrosresurs LLP, 2018 — 2024', ru: 'ТОО «Казросресурс», 2018 — 2024' } },
     { role: { en: 'PhD', ru: 'PhD' }, detail: { en: 'Chemical technology of organic substances, Satbayev University, 2022', ru: 'Химическая технология органических веществ, Satbayev University, 2022' } },
     { role: { en: 'Associate Professor', ru: 'Доцент' }, detail: { en: 'M. Kozybayev North Kazakhstan University, 2023 — 2025', ru: 'СКУ им. М. Козыбаева, 2023 — 2025' } },
     { role: { en: 'Director, Commercialization Office', ru: 'Директор Офиса коммерциализации' }, detail: { en: 'A. Myrzakhmetov Kokshetau University, since September 2025', ru: 'Кокшетауский университет им. А. Мырзахметова, с сентября 2025 года' } },
     { role: { en: 'Project Lead', ru: 'Руководитель проекта' }, detail: { en: 'Overrule', ru: 'Overrule' } },
-    { role: { en: 'Education', ru: 'Образование' }, detail: { en: 'BSc, Novosibirsk State Technical University, 2017 · MSc, Kozybayev University, 2019 · PhD, Satbayev University, 2022', ru: 'Бакалавр, НГТУ, 2017 · магистр, СКУ им. М. Козыбаева, 2019 · PhD, Satbayev University, 2022' } },
+    {
+      role: { en: 'Education', ru: 'Образование' },
+      detail: [
+        { en: 'BSc, Novosibirsk State Technical University, 2017', ru: 'Бакалавр, НГТУ (Новосибирск), 2017' },
+        { en: 'MSc, M. Kozybayev North Kazakhstan University, 2019', ru: 'Магистр, СКУ им. М. Козыбаева, 2019' },
+        { en: 'PhD, Satbayev University, 2022', ru: 'PhD, Satbayev University, 2022' },
+      ],
+    },
     { role: { en: 'Languages', ru: 'Языки' }, detail: { en: 'Kazakh, Russian, English', ru: 'Казахский, русский, английский' } },
-  ] as { role: L; detail: L }[],
+  ] as { role: L; detail: L | L[] }[],
   awardsHeading: { en: 'Awards', ru: 'Награды' } as L,
   awardsHint: { en: 'Select a scan to open it', ru: 'Нажмите на скан, чтобы открыть' } as L,
   pressHeading: { en: 'Press', ru: 'Пресса' } as L,
@@ -271,5 +279,6 @@ export const credits = {
   closingSub: { en: 'Still in production', ru: 'Съёмки продолжаются' } as L,
   moodboard: { en: 'Moodboard', ru: 'Мудборд' } as L,
   again: { en: 'Play again', ru: 'Сначала' } as L,
+  newTab: { en: ' (opens in a new tab)', ru: ' (откроется в новой вкладке)' } as L,
   close: { en: 'Close', ru: 'Закрыть' } as L,
 };

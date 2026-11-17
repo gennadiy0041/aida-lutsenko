@@ -5,14 +5,16 @@
  */
 interface Props {
   text: string;
+  /** What a screen reader says instead of the letters (natural case). Default: the text itself. */
+  label?: string;
   class?: string;
 }
-const { text, class: cls } = Astro.props;
+const { text, label = text, class: cls } = Astro.props;
 const words = text.split(' ');
 let index = 0;
 ---
 
-<span class="sr-only">{text}</span><span class:list={['letters', cls]} aria-hidden="true"
+<span class="sr-only">{label}</span><span class:list={['letters', cls]} aria-hidden="true"
   >{
     words.map((word, wi) => {
       const chars = [...word];

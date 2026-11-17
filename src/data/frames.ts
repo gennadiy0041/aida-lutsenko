@@ -134,7 +134,11 @@ const defs = new Map(frameDefs.map((d) => [d.id, d]));
 
 export function getFrame(id: string): Frame {
   const def = defs.get(id) ?? { id, alt: { en: '', ru: '' } };
-  return { ...def, src: byId.get(id), tall: tallById.get(id) };
+  const src = byId.get(id);
+  if (src && !(def.alt.en.trim() && def.alt.ru.trim())) {
+    throw new Error(`frames: "${id}" has a photograph but no alt text. Add it to frameDefs in src/data/frames.ts`);
+  }
+  return { ...def, src, tall: tallById.get(id) };
 }
 
 export const hasFrames = byId.size > 0;
