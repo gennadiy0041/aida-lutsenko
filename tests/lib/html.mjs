@@ -119,11 +119,16 @@ function unfold(raw, pattern, replace) {
  * `origin[i]` is the offset in the original text of character `i`.
  */
 export function visibleText(raw) {
-  return unfold(raw, new RegExp(`${TAG_OR_COMMENT}|${ENTITY_TOKEN}|${INVISIBLE}`, 'gu'), (token) => {
+  const replace = (token) => {
     if (token[0] === '&') return decodeEntities(token);
     if (token[0] === '<' && !/^<\/?wbr\b|^<!--/i.test(token)) return ' ';
     return '';
-  });
+  };
+  // No tag can start after the last ">". Reading that tail without the tag pattern keeps the work linear.
+  const end = raw.lastIndexOf('>') + 1;
+  const head = unfold(raw.slice(0, end), new RegExp(`${TAG_OR_COMMENT}|${ENTITY_TOKEN}|${INVISIBLE}`, 'gu'), replace);
+  const tail = unfold(raw.slice(end), new RegExp(`${ENTITY_TOKEN}|${INVISIBLE}`, 'gu'), replace);
+  return { text: head.text + tail.text, origin: head.origin.concat(tail.origin.map((i) => i + end)) };
 }
 
 /** The source with its character references decoded and everything else (tags, attributes, scripts) in place. */

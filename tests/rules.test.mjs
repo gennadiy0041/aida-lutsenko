@@ -3,7 +3,8 @@
  * ordinary site copy alone. It needs no build.
  *
  * Every sample is made up. Numbers are assembled from repeated digits (area code 000 does not
- * exist), the street is «Примерная» ("Example"), the year is 1900.
+ * exist), the street is «Примерная» ("Example"), the year is 1900. Characters that cannot be told
+ * apart on screen are built from their code points with cp().
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,20 +14,22 @@ import { documentKind, emoji, gradients, hiddenMetadata, mask, privateData, susp
 const d = (count, digit = '0') => String(digit).repeat(count);
 const counting = (count) => Array.from({ length: count }, (_, i) => (i + 1) % 10).join('');
 const cp = (...codes) => String.fromCodePoint(...codes);
+const NBSP = cp(0xa0);
+const NB_HYPHEN = cp(0x2011);
+const NUL = cp(0);
 
 /** The rules that fire on a sample. */
 const rulesIn = (text, markup = false) => [...new Set(privateData(text, { markup }).map((f) => f.rule))];
+const each = (samples) => samples.map((s) => (Array.isArray(s) ? s : [s, false]));
 
+/** Every sample must trip the rule. A sample is a string, or [string, true] when it is markup. */
 function catches(rule, samples) {
-  for (const [sample, markup = false] of samples.map((s) => (Array.isArray(s) ? s : [s]))) {
-    assert.ok(rulesIn(sample, markup).includes(rule), `the ${rule} rule must catch: ${sample}`);
-  }
+  for (const [sample, markup] of each(samples)) assert.ok(rulesIn(sample, markup).includes(rule), `the ${rule} rule must catch: ${sample}`);
 }
 
+/** No sample may trip the rule. */
 function ignores(rule, samples) {
-  for (const [sample, markup = false] of samples.map((s) => (Array.isArray(s) ? s : [s]))) {
-    assert.ok(!rulesIn(sample, markup).includes(rule), `the ${rule} rule must not fire on: ${sample}`);
-  }
+  for (const [sample, markup] of each(samples)) assert.ok(!rulesIn(sample, markup).includes(rule), `the ${rule} rule must not fire on: ${sample}`);
 }
 
 /** Copy the site really uses, or easily could. No rule may fire on it. */
@@ -46,6 +49,7 @@ const SITE_COPY = [
   'aidalutsenko@gmail.com · https://www.instagram.com/aida.luts/',
   '<a href="https://overrule-production.up.railway.app">Open Overrule</a>',
   '.v1-fade{transition:opacity .8s cubic-bezier(.2,.8,.2,1) 2.90s;aspect-ratio:2.39/1}',
+  '<img srcset="/_astro/p01.DQ1i-xNl_Z2rMAx9.avif 640w, /_astro/p01.DQ1i-xNl_QuvgN.avif 1280w" sizes="(min-width: 768px) 50vw, 100vw" width="2400" height="1004">',
 ];
 
 describe('private data', () => {
@@ -59,7 +63,7 @@ describe('private data', () => {
       `+7 ${a} ${b} ${c} ${e}`,
       `+7 (${a}) ${b}-${c}-${e}`,
       `+7${a}${b}${c}${e}`,
-      `+7 ${a} ${b}‑${c}‑${e}`,
+      `+7${NBSP}${a}${NBSP}${b}${NB_HYPHEN}${c}${NB_HYPHEN}${e}`,
       `+7.${a}.${b}.${c}.${e}`,
       `+7 (${d(4)}) ${c}-${e}-${c}`,
       `8 (${a}) ${b}-${c}-${e}`,
@@ -73,12 +77,14 @@ describe('private data', () => {
       [`&#43;7 ${a} ${b} ${c} ${e}`, true],
       `<a href="tel:+7${a}${b}${c}${e}">`,
       `<a href="tel:8${a}${b}${c}${e}">`,
+      `<a href="tel:+1${d(10)}">`, // a link that dials is a phone number, whatever the country
+      `<a href='sms:${d(6, 1)}'>`,
       `https://wa.me/7${a}${b}${c}${e}`,
       `https://api.whatsapp.com/send?phone=7${a}${b}${c}${e}`,
     ]);
   });
 
-  test('phone numbers: years, prices, IDs of papers and code are not phone numbers', () => {
+  test('phone numbers: years, prices, paper IDs, CSS and vector geometry are not phone numbers', () => {
     ignores('phone', [
       '2018 — 2024',
       '7152.kz, 8 March 2024',
@@ -92,7 +98,11 @@ describe('private data', () => {
       'Hotel: 5 stars',
       `{email:1,tel:${d(5, 2)}}`,
       'calc(100% + 7px)',
-      `x=a+7-b`,
+      'x=a+7-b',
+      'c0-4.93847 4.00624-8.9419 8.94818-8.9419h49.21475c4.9424 0 8.9486 4.00343 8.9486 8.9419',
+      '1.00072 68.731 8.67377 68.731Z',
+      ['<svg viewBox="0 0 8 705"><path d="M10 8 705-123 45 67 8 705 123 45 67z"/><polygon points="8 705 123 45 67"/></svg>', true],
+      'x+7.25-1.5-(2.5)-3.75-1.25*y',
     ]);
   });
 
@@ -115,6 +125,7 @@ describe('private data', () => {
       '01.01.1900',
       '1.1.1900',
       '31/12/1900',
+      'от 01.01.1900.',
       '1900-01-01',
       'Date of birth',
       'Дата рождения',
@@ -136,6 +147,7 @@ describe('private data', () => {
       'Satbayev University, 2022',
       'gsap 3.12.5',
       'M12.5.1900h3',
+      '0-5.1074.41596-7.1543 1.03.1949.81213.4679 2.45617',
     ]);
   });
 
@@ -149,6 +161,8 @@ describe('private data', () => {
       'мкр. Примерный, 3',
       'Example Avenue 12',
       'Example street, 86',
+      'example avenue 5a',
+      'EXAMPLE STREET 7',
       '12 Example Avenue',
       '221B Example Street',
       '76 Example str., Kokshetau',
@@ -179,14 +193,23 @@ describe('private data', () => {
   test('a finding is shown masked, never in full', () => {
     assert.equal(mask(`+7 ${d(3, 1)} ${d(3, 2)} ${d(2, 3)} 45`, { head: 1, tail: 2 }), '+7 ••• ••• •• 45');
     assert.equal(mask('ул. Примерная, 12', { letters: true, head: 2, tail: 0 }), 'ул. •••••••••, ••');
-    const samples = [`+7 ${counting(3)} ${counting(3)} ${counting(2)} ${counting(2)}`, `ИИН ${counting(12)}`, '21.11.1900', 'ул. Примерная, 123'];
+    const samples = [`+7 ${counting(3)} ${counting(3)} ${counting(2)} ${counting(2)}`, `ИИН ${counting(12)}`, '21.11.1900', 'ул. Примерная, 123', '12 Example Avenue'];
     for (const sample of samples) {
-      for (const finding of privateData(sample)) {
+      const findings = privateData(sample);
+      assert.ok(findings.length > 0, `nothing found in: ${sample}`);
+      for (const finding of findings) {
         const kept = (finding.shown.match(/\d/g) ?? []).length;
         assert.ok(kept <= 3, `"${finding.shown}" shows ${kept} digits of a ${finding.what}`);
-        assert.ok(!finding.shown.includes('Примерная'), `"${finding.shown}" shows the street name`);
+        assert.ok(!/Примерная|Example/.test(finding.shown), `"${finding.shown}" shows the street name`);
       }
     }
+  });
+
+  test('a finding points at its place in the file', () => {
+    const page = `<p>one</p>\n<p>two <b>+7</b>&nbsp;${d(3)} ${d(3, 1)}-${d(2)}-${d(2, 1)}</p>`;
+    const [finding] = privateData(page, { markup: true });
+    assert.equal(finding.rule, 'phone');
+    assert.equal(position(page, finding.index), '2:11');
   });
 });
 
@@ -225,7 +248,7 @@ describe('files', () => {
     for (const rel of ['cv.pdf', 'docs/Resume.PDF', 'cv.pdf.br', 'scan.docx', 'awards.zip']) assert.ok(documentKind(rel, html), `must be flagged: ${rel}`);
     assert.equal(documentKind('file.bin', Buffer.from('%PDF-1.7\n')), 'PDF');
     assert.equal(documentKind('index.html', html), null);
-    assert.equal(documentKind('_astro/a.webp', Buffer.from('RIFF\u0000\u0000\u0000\u0000WEBPVP8 ')), null);
+    assert.equal(documentKind('_astro/a.webp', Buffer.from(`RIFF${d(4, NUL)}WEBPVP8 `, 'latin1')), null);
   });
 
   test('text is read as text, pictures are not', () => {
@@ -238,7 +261,7 @@ describe('files', () => {
 });
 
 describe('metadata hidden in pictures and video', () => {
-  /** A minimal EXIF block: one harmless tag, optionally a GPS directory and a thumbnail directory. */
+  /** A minimal EXIF block inside a JPEG header: one harmless tag, optionally a GPS directory and a thumbnail directory. */
   function exif({ gps = false, thumbnail = false, bigEndian = false } = {}) {
     const bytes = Buffer.alloc(128);
     const u16 = (value, at) => (bigEndian ? bytes.writeUInt16BE(value, at) : bytes.writeUInt16LE(value, at));
@@ -246,28 +269,30 @@ describe('metadata hidden in pictures and video', () => {
     const entry = (at, tag, type, count, value) => { u16(tag, at); u16(type, at + 2); u32(count, at + 4); u32(value, at + 8); };
     bytes.write(bigEndian ? 'MM' : 'II', 0, 'latin1');
     u16(42, 2);
-    u32(8, 4);
+    u32(8, 4); // the first directory starts at offset 8
     u16(gps ? 2 : 1, 8);
     entry(10, 0x0112, 3, 1, 1); // Orientation
     if (gps) entry(22, 0x8825, 4, 1, 64); // pointer to the GPS directory
-    u32(thumbnail ? 96 : 0, gps ? 34 : 22); // next directory
+    u32(thumbnail ? 96 : 0, gps ? 34 : 22); // offset of the next directory
     if (gps) { u16(1, 64); entry(66, 0x0002, 5, 3, 112); u32(0, 78); } // GPSLatitude
     if (thumbnail) { u16(1, 96); entry(98, 0x0201, 4, 1, 120); u32(0, 110); } // JPEGInterchangeFormat
-    return Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe1, 0x00, 0x86]), Buffer.from('Exif\u0000\u0000', 'latin1'), bytes]);
+    return Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe1, 0x00, 0x86]), Buffer.from(`Exif${NUL}${NUL}`, 'latin1'), bytes]);
   }
+  /** The QuickTime location atom (0xA9 "xyz"), its length and language bytes, then whatever follows. */
+  const quickTime = (after) => Buffer.concat([Buffer.from('moov'), Buffer.from([0xa9, 0x78, 0x79, 0x7a, 0x00, 0x12, 0x15, 0xc7]), Buffer.from(after)]);
 
   test('a clean picture gives nothing away', () => {
     assert.deepEqual(hiddenMetadata(exif()), []);
-    assert.deepEqual(hiddenMetadata(Buffer.from('RIFF\u0000\u0000\u0000\u0000WEBPVP8 II*\u0000 not a directory', 'latin1')), []);
+    assert.deepEqual(hiddenMetadata(Buffer.from(`RIFF${d(4, NUL)}WEBPVP8 II*${NUL} not a directory`, 'latin1')), []);
   });
 
   test('GPS position: EXIF, XMP, QuickTime', () => {
     assert.match(hiddenMetadata(exif({ gps: true })).join(), /GPS position \(EXIF\)/);
     assert.match(hiddenMetadata(exif({ gps: true, bigEndian: true })).join(), /GPS position \(EXIF\)/);
     assert.match(hiddenMetadata(Buffer.from('<x:xmpmeta><rdf:Description exif:GPSLatitude="0,0.0N"/></x:xmpmeta>')).join(), /GPS position \(XMP\)/);
-    assert.match(hiddenMetadata(Buffer.from('moov©xyz\u0000\u0012\u0015Ç+00.0000+000.0000/', 'latin1')).join(), /QuickTime/);
-    assert.match(hiddenMetadata(Buffer.from('mdtacom.apple.quicktime.location.ISO6709', 'latin1')).join(), /QuickTime/);
-    assert.deepEqual(hiddenMetadata(Buffer.from('©xyz and nothing like a coordinate after it', 'latin1')), []);
+    assert.match(hiddenMetadata(quickTime('+00.0000+000.0000/')).join(), /QuickTime/);
+    assert.match(hiddenMetadata(Buffer.from('mdtacom.apple.quicktime.location.ISO6709')).join(), /QuickTime/);
+    assert.deepEqual(hiddenMetadata(quickTime('and nothing like a coordinate after it')), []);
   });
 
   test('an embedded thumbnail can still show the frame before the crop', () => {
@@ -288,28 +313,30 @@ describe('house style', () => {
     for (const css of ['--tw-gradient-from:#0b0a09', '.gradient{color:#c7ad85}', 'background:url(/_astro/grain.UPhL5qVV.webp)']) {
       assert.deepEqual(gradients(css), [], `must pass: ${css}`);
     }
+    assert.deepEqual(gradients('a{background:repeating-linear-gradient(red,blue)}'), [{ index: 13, name: 'repeating-linear-gradient' }]);
   });
 
   test('emoji', () => {
-    const selector = cp(0xfe0f);
-    for (const text of [
-      cp(0x1f600), // grinning face
-      cp(0x2b50), // star
-      cp(0x2714), // heavy check mark
-      cp(0x2197), // north-east arrow: phones draw it as an emoji
-      cp(0x25b6), // play triangle
-      cp(0x00a9) + selector, // copyright sign asked to be an emoji
-      `1${selector}${cp(0x20e3)}`, // keycap
-      cp(0x1f1f0, 0x1f1ff), // flag
-    ]) assert.ok(emoji(`a ${text} b`).length > 0, `must be flagged: ${[...text].map((ch) => ch.codePointAt(0).toString(16)).join(' ')}`);
-    for (const text of [
-      'Zimran × AIESEC, 15+, TOP-5, N° I, #1 *',
-      'Scroll ↓ · → ← ↑',
-      '© 2026 Aida Lutsenko ™ ®',
-      '«Казросресурс» — «ёлочки», № 5',
-      `${cp(0x2605)} ${cp(0x2715)} ${cp(0x2713)} ${cp(0x2726)}`, // black star, multiplication x, check mark, four-pointed star: plain symbols
-      `${cp(0x2197)}${cp(0xfe0e)}`, // the arrow with the text selector
-    ]) assert.deepEqual(emoji(text), [], `must pass: ${text}`);
+    const emojiSelector = cp(0xfe0f);
+    const textSelector = cp(0xfe0e);
+    for (const [what, text] of [
+      ['grinning face', cp(0x1f600)],
+      ['star', cp(0x2b50)],
+      ['heavy check mark', cp(0x2714)],
+      ['north-east arrow (phones draw it as an emoji)', cp(0x2197)],
+      ['play triangle', cp(0x25b6)],
+      ['copyright sign asked to be an emoji', cp(0xa9) + emojiSelector],
+      ['keycap 1', `1${emojiSelector}${cp(0x20e3)}`],
+      ['flag', cp(0x1f1f0, 0x1f1ff)],
+    ]) assert.ok(emoji(`a ${text} b`).length > 0, `must be flagged: ${what}`);
+    for (const [what, text] of [
+      ['signs of the site copy', 'Zimran × AIESEC, 15+, TOP-5, N° I, #1 *'],
+      ['plain arrows', 'Scroll ↓ · → ← ↑'],
+      ['copyright, trade mark, registered', `${cp(0xa9)} 2026 Aida Lutsenko ${cp(0x2122)} ${cp(0xae)}`],
+      ['Russian typography', '«Казросресурс» — «ёлочки», № 5'],
+      ['black star, multiplication x, check mark, four-pointed star', `${cp(0x2605)} ${cp(0x2715)} ${cp(0x2713)} ${cp(0x2726)}`],
+      ['north-east arrow with the text selector', cp(0x2197) + textSelector],
+    ]) assert.deepEqual(emoji(text), [], `must pass: ${what}`);
   });
 });
 
@@ -333,13 +360,18 @@ describe('reading HTML', () => {
   });
 
   test('visible text, character references, positions', () => {
-    const raw = `<p>+7&nbsp;<b>${d(3)}</b></p>\n<p>line two</p>`;
+    const raw = `<p>+7&nbsp;<b>${d(3)}</b></p>\n<p>line&shy; two</p>`;
     const seen = visibleText(raw);
     assert.equal(seen.text.replace(/\s+/g, ' ').trim(), `+7 ${d(3)} line two`);
     assert.equal(raw[seen.origin[seen.text.indexOf('+7')]], '+');
-    assert.equal(decodeEntities('&#43;&#x37;&nbsp;&amp;&unknown;'), '+7 &&unknown;');
+    const trailing = visibleText('<p>a</p> after &amp; the last tag');
+    assert.equal(trailing.text, ' a  after & the last tag');
+    assert.equal(trailing.origin[trailing.text.indexOf('last')], '<p>a</p> after &amp; the '.length);
+    assert.equal(visibleText('<dt>Born</dt><dd>1900</dd>').text.trim().replace(/\s+/g, ' '), 'Born 1900', 'a tag separates words');
+    assert.equal(visibleText('Алек<wbr>сандр').text, 'Александр', 'a line-break opportunity does not');
+    assert.equal(decodeEntities('&#43;&#x37;&nbsp;&amp;&unknown;'), `+7${NBSP}&&unknown;`);
     assert.equal(decodedSource('<i title="&#x2197;">').text, `<i title="${cp(0x2197)}">`);
     assert.equal(decodeCssEscapes(String.raw`content:"\2197 \FE0E"`), `content:"${cp(0x2197)}${cp(0xfe0e)}"`);
-    assert.equal(position(raw, raw.indexOf('line two')), '2:4');
+    assert.equal(position(raw, raw.indexOf('line')), '2:4');
   });
 });

@@ -1001,3 +1001,10 @@ html.reel .film--v1 .ch__count {
     font-size: 1.08rem;
   }
 }
+
+/* the last card: one line alone on a black screen */
+.film--v1 .cr__fin {
+  min-height: 100svh;
+  align-content: center;
+  padding-block: var(--bar, 6rem);
+}

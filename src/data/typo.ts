@@ -9,7 +9,7 @@ export function typoEn(s: string): string {
   return s
     .replace(/\s+—/g, `${NBSP}—`)
     .replace(/(\d)\s+(?=[a-z])/g, `$1${NBSP}`)
-    .replace(/\b(top|Cup|Kazakhstan|March|September|Chapter)\s+(?=\d|[IVX]+\b)/g, `$1${NBSP}`)
+    .replace(/\b(top|Top|Cup|Kazakhstan|March|September|Chapter)\s+(?=\d|[IVX]+\b)/g, `$1${NBSP}`)
     .replace(/\b([A-Z]\.)\s+(?=[A-Z])/g, `$1${NBSP}`);
 }
 

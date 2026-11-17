@@ -5,10 +5,10 @@
  *
  * Which photograph sits in which slot, and every word on the page: src/data/moodboard.ts.
  */
-import '@fontsource-variable/cormorant-garamond/wght.css';
-import '@fontsource-variable/cormorant-garamond/wght-italic.css';
-import cormorantLatin from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2?url';
-import cormorantItalicLatin from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-italic.woff2?url';
+import '@fontsource-variable/noto-serif-display/wght.css';
+import '@fontsource-variable/noto-serif-display/wght-italic.css';
+import displayLatin from '@fontsource-variable/noto-serif-display/files/noto-serif-display-latin-wght-normal.woff2?url';
+import displayItalicLatin from '@fontsource-variable/noto-serif-display/files/noto-serif-display-latin-wght-italic.woff2?url';
 import Base from '../layouts/Base.astro';
 import LangToggle from '../components/LangToggle.astro';
 import Plate from '../components/Plate.astro';
@@ -26,8 +26,8 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
 <Base
   title={board.pageTitle}
   description={board.description}
-  display="'Cormorant Garamond Variable'"
-  preload={[cormorantLatin, cormorantItalicLatin]}
+  display="'Noto Serif Display Variable'"
+  preload={[displayLatin, displayItalicLatin]}
   theme="light"
 >
   <main class="mb">
@@ -74,12 +74,12 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
       </div>
     </header>
 
-    <section class="mb-open">
+    <div class="mb-open">
       <Plate id="p01" ratio="scope" vw={[100, 100]} priority class="mb-bleed" />
-    </section>
+    </div>
 
     <!-- pp. 02–03: a tall portrait facing two small plates and their captions -->
-    <section class="mb-spread mb-a">
+    <div class="mb-spread mb-a">
       <div class="mb-sheet">
         <figure class="mb-grid mb-a__grid">
           <Plate as="div" caption="number" id="p02" ratio="portrait" vw={[42, 80]} class="mb-a__tall mb-rise" />
@@ -111,10 +111,10 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
           <span class="mb-foot__no">03</span>
         </footer>
       </div>
-    </section>
+    </div>
 
     <!-- pp. 04–05: a small plate in white space, a large pull-line -->
-    <section class="mb-spread mb-b">
+    <div class="mb-spread mb-b">
       <div class="mb-sheet">
         <div class="mb-grid mb-b__grid">
           <Plate id="p05" ratio="portrait" vw={[22.5, 59]} class="mb-b__plate mb-rise" />
@@ -139,10 +139,10 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
           <span class="mb-foot__no">05</span>
         </footer>
       </div>
-    </section>
+    </div>
 
     <!-- pp. 06–07: a small square, a large plate that runs across the fold and off the page -->
-    <section class="mb-spread mb-c">
+    <div class="mb-spread mb-c">
       <div class="mb-sheet">
         <div class="mb-grid mb-c__grid">
           <Plate id="p06" ratio="square" vw={[22.5, 44]} class="mb-c__small mb-rise" />
@@ -157,10 +157,10 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
           <span class="mb-foot__no">07</span>
         </footer>
       </div>
-    </section>
+    </div>
 
     <!-- pp. 08–09: a diptych -->
-    <section class="mb-spread mb-d">
+    <div class="mb-spread mb-d">
       <div class="mb-sheet">
         <div class="mb-grid mb-d__grid">
           <Plate id="p08" ratio="portrait" vw={[30.5, 44]} class="mb-d__l mb-rise" />
@@ -175,10 +175,10 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
           <span class="mb-foot__no">09</span>
         </footer>
       </div>
-    </section>
+    </div>
 
     <!-- pp. 10–11: the closing plate -->
-    <section class="mb-spread mb-close">
+    <div class="mb-spread mb-close">
       <Plate id="p10" ratio="scope" vw={[100, 100]} class="mb-bleed mb-rise" />
       <div class="mb-sheet">
         <footer class="mb-foot credit" aria-hidden="true">
@@ -190,7 +190,7 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
           <span class="mb-foot__no">11</span>
         </footer>
       </div>
-    </section>
+    </div>
 
     <!-- back cover -->
     <footer class="mb-end">
@@ -200,7 +200,7 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
         <div class="mb-end__row credit">
           <p><T t={board.title} /><span class="mb-dash" aria-hidden="true"></span><T t={board.issue} /></p>
           <p>
-            <a href={person.instagram.url} rel="noopener">Instagram<span class="mb-dash" aria-hidden="true"></span>{person.instagram.handle}</a>
+            <a href={person.instagram.url} rel="me noopener">Instagram<span class="mb-dash" aria-hidden="true"></span>{person.instagram.handle}</a>
           </p>
         </div>
       </div>
@@ -546,7 +546,8 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
       grid-column: 1 / -1;
       grid-row: 2;
       margin-top: 0.55rem;
-      font-size: 1.5rem;
+      /* each sentence keeps its own line, in the fallback face too */
+      font-size: min(1.5rem, 6.6cqw);
       text-align: left;
     }
     .mb-deck__s {
@@ -674,5 +675,12 @@ const legend = ['p02', 'p03', 'p04'].map(getPlate);
   html.motion .plate__img.is-loading {
     opacity: 0;
     transition: none;
+  }
+  @media print {
+    html.motion .mb-rise.is-below,
+    html.motion .plate__img.is-loading {
+      opacity: 1;
+      transform: none;
+    }
   }
 </style>

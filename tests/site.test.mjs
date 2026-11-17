@@ -36,7 +36,8 @@ const INSTAGRAM = 'aida.luts';
 
 /** Every file of the build, read once: { rel, bytes, text (null for binary files), html (pages and SVG) }. */
 function load() {
-  if (!fs.existsSync(DIST) || !fs.statSync(DIST).isDirectory()) return { missing: `${DIST} does not exist.` };
+  const where = OWN_DIST ? 'dist/' : DIST;
+  if (!fs.existsSync(DIST) || !fs.statSync(DIST).isDirectory()) return { missing: `${where} does not exist.` };
   const files = [];
   const walk = (dir) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -49,23 +50,32 @@ function load() {
       files.push({ rel, bytes, text, html: text !== null && isMarkup(rel) ? readHtml(text) : null });
     }
   };
-  try { walk(DIST); } catch (error) { return { missing: `${DIST} changed while it was being read (${error.code ?? error.message}). Is a build running?` }; }
-  if (!files.some((f) => f.rel === 'index.html')) return { missing: `${DIST} has no index.html.` };
-  return { files, byRel: new Map(files.map((f) => [f.rel, f])), pages: files.filter((f) => /\.html?$/i.test(f.rel) && f.html) };
+  try { walk(DIST); } catch (error) { return { missing: `${where} changed while it was being read (${error.code ?? error.message}). Is a build running?` }; }
+  if (!files.some((f) => f.rel === 'index.html')) return { missing: `${where} has no index.html.` };
+  // A redirect stub (<meta http-equiv="refresh">, what Astro writes for `redirects`) is not a page anyone reads:
+  // it is checked for private data and for its target like every file, but not for a title, an <h1> or Russian.
+  const documents = files.filter((f) => /\.html?$/i.test(f.rel) && f.html);
+  const isStub = (f) => f.html.tags.some((t) => t.name === 'meta' && /^refresh$/i.test(t.attrs.get('http-equiv') ?? ''));
+  return { files, byRel: new Map(files.map((f) => [f.rel, f])), documents, pages: documents.filter((f) => !isStub(f)) };
 }
 
 const site = load();
 const name = (file) => `${LABEL}/${file.rel}`;
 const at = (file, index) => `${name(file)}:${position(file.text, index)}`;
 
-/** Fails with one line per problem: file, place, what is wrong. The list is the whole story, so no stack trace follows it. */
+/** Fails the test with a message that is the whole story: no stack trace into this file follows it. */
+function fail(message) {
+  const error = new Error(message);
+  error.stack = message;
+  throw error;
+}
+
+/** Fails with one line per problem: file, place, what is wrong. */
 function expectNone(problems, fix) {
   if (problems.length === 0) return;
   const lines = problems.slice(0, 30).map((p) => `  ${p}`);
   if (problems.length > 30) lines.push(`  … and ${problems.length - 30} more`);
-  const error = new Error(`${problems.length} problem${problems.length === 1 ? '' : 's'}. ${fix}\n${lines.join('\n')}`);
-  error.stack = error.message;
-  throw error;
+  fail(`${problems.length} problem${problems.length === 1 ? '' : 's'}. ${fix}\n${lines.join('\n')}`);
 }
 
 /** `content` of the first <meta property|name="key">, trimmed; undefined when the page has none. */
@@ -120,9 +130,7 @@ function youngerSource() {
 /* ------------------------------------------------------------------------------- the lane ---- */
 
 if (site.missing) {
-  test('the site is built', () => {
-    assert.fail(`${site.missing}\nThis lane checks the built site and does not build it. Run:  npm run build`);
-  });
+  test('the site is built', () => fail(`${site.missing}\nThis lane checks the built site and does not build it. Run:  npm run build`));
 } else {
   const { files, pages } = site;
   const textFiles = files.filter((f) => f.text !== null);
@@ -212,7 +220,7 @@ if (site.missing) {
           for (const e of emoji(css)) if (!written.has(e.char)) problems.push(`${at(file, sheet.index)}  ${e.code} ${e.char}  written as a CSS escape: ${excerpt(css, e.index, 50)}`);
         }
       }
-      expectNone(problems, 'Use type, not emoji. A symbol phones draw as an emoji (↗ ▶ ✔) needs the text selector after it: &#xFE0E;');
+      expectNone(problems, 'Use type, not emoji. A symbol that phones draw as an emoji (a diagonal arrow, a play triangle, a check mark) needs the text selector right after it: &#xFE0E;');
     });
   });
 
