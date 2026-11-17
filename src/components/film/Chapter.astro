@@ -23,18 +23,42 @@ const beats = beat;
 const two = (n: number) => String(n).padStart(2, '0');
 /** A subtitle breaks between sentences first: each sentence is one unit that prefers to stay whole. */
 const sentences = (s: string) => s.split(/(?<=[.?!])\s+/);
+/** A scene heading breaks only after a dash. */
+const dashParts = (s: string) => s.split(/(?<=—)\s+/);
+const long = (s: string) => s.length > 12;
 ---
 
 <section class="ch" id={c.id} data-chapter={c.numeral} aria-labelledby={`ch-${c.id}`}>
   <header class="ch__card">
-    <p class="credit ch__slug" data-reveal><T t={c.slug} /></p>
+    <p class="credit ch__slug" data-reveal>
+      <span data-l="en" lang="en">
+        {dashParts(c.slug.en).map((s) => (
+          <>
+            <span class="ch__seg">{typoEn(s)}</span>{' '}
+          </>
+        ))}
+      </span>
+      <span data-l="ru" lang="ru">
+        {dashParts(c.slug.ru).map((s) => (
+          <>
+            <span class="ch__seg">{typoRu(s)}</span>{' '}
+          </>
+        ))}
+      </span>
+    </p>
     <p class="ch__numeral" aria-hidden="true" data-reveal>{c.numeral}</p>
     <h2 class="ch__title" id={`ch-${c.id}`} data-reveal>
       <span class="sr-only"><T t={{ en: `Chapter ${c.numeral}.`, ru: `Глава ${c.numeral}.` }} /> </span><span
         data-l="en"
         lang="en"
+        class:list={[long(c.title.en) && 'is-long']}
         style={`--len:${c.title.en.length}`}>{c.title.en}</span
-      ><span data-l="ru" lang="ru" style={`--len:${c.title.ru.length}`}>{c.title.ru}</span>
+      ><span
+        data-l="ru"
+        lang="ru"
+        class:list={[long(c.title.ru) && 'is-long']}
+        style={`--len:${c.title.ru.length}`}>{c.title.ru}</span
+      >
     </h2>
     <p class="credit ch__years" data-reveal>{c.years}</p>
   </header>

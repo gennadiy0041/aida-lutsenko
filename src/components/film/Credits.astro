@@ -68,6 +68,7 @@ const items = await Promise.all(
         ))
       }
     </ul>
+    <p class="credit cr__hint"><T t={credits.awardsHint} /></p>
     <ol class="cr__list">
       {
         items.map((a, i) => (
@@ -80,7 +81,6 @@ const items = await Promise.all(
         ))
       }
     </ol>
-    <p class="credit cr__hint"><T t={credits.awardsHint} /></p>
   </div>
 
   <div class="cr__pair">

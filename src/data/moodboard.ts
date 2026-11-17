@@ -142,6 +142,12 @@ export const plates: Plate[] = defs.map((def, i) => ({
   src: byId.get(def.id),
 }));
 
+for (const plate of plates) {
+  if (plate.src && !(plate.alt?.en.trim() && plate.alt?.ru.trim())) {
+    throw new Error(`moodboard: "${plate.id}" has a photograph but no alt text. Add alt: { en, ru } in src/data/moodboard.ts`);
+  }
+}
+
 export function getPlate(id: string): Plate {
   const plate = plates.find((p) => p.id === id);
   if (!plate) throw new Error(`moodboard: unknown plate "${id}"`);
@@ -164,7 +170,7 @@ export const board = {
   plate: { en: 'Pl.', ru: 'Кадр' } as L,
   /** The pull-line beside plate 05, one item per line. */
   pull: {
-    en: ['And black,', 'worn like a signature.'],
+    en: ['And black,', 'worn like', 'a signature.'],
     ru: ['И чёрное —', 'как подпись.'],
   },
   /** The way back to the film: beside the name in the top row, and above the closing link. */

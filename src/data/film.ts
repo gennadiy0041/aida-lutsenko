@@ -75,7 +75,7 @@ export const chapters: Chapter[] = [
     ],
     link: {
       href: 'https://www.7152.kz/news/3744549/v-sko-devuska-rukovodit-prakticeski-polnostu-muzskim-kollektivom',
-      label: { en: 'Read the profile on 7152.kz (in Russian)', ru: 'Читать материал на 7152.kz' },
+      label: { en: 'Press: 7152.kz (in Russian)', ru: 'Пресса: 7152.kz' },
       hreflang: 'ru',
     },
   },

@@ -115,6 +115,7 @@ a:hover > .ch__arrow {
   display: inline-flex;
   align-items: center;
   gap: 1em;
+  white-space: nowrap;
   padding: 1rem 0 0.75rem;
   border-bottom: 1px solid var(--accent);
 }
@@ -139,7 +140,7 @@ a:hover > .ch__arrow {
 /* tracked capitals: the size is fitted to the word, the trailing tracking is cancelled */
 .film--v1 .ch__title > [data-l],
 .film--v1 .cr__title > [data-l] {
-  font-size: clamp(1.05rem, min(4.3vw, calc(86vw / var(--len, 8) / 1.06)), 3.75rem);
+  font-size: clamp(1.05rem, min(4.3vw, calc(86vw / var(--len, 8) / 1.06)), 5.25rem);
   letter-spacing: 0.34em;
   margin-right: -0.34em;
 }
@@ -162,7 +163,8 @@ a:hover > .ch__arrow {
 .film--v1 .ch__facts {
   display: grid;
   gap: 0.85rem;
-  width: min(100%, 50rem);
+  width: min(100%, clamp(50rem, 52vw, 66rem));
+  font-size: clamp(1rem, 1.05vw, 1.375rem);
 }
 .film--v1 .ch__fact {
   display: grid;
@@ -445,6 +447,7 @@ a:hover > .ch__arrow {
 .cr__roll {
   display: grid;
   gap: 1.05rem;
+  font-size: clamp(1rem, 1.05vw, 1.375rem);
   width: min(100% - 2 * var(--pad), 58rem);
   margin: clamp(2.5rem, 6svh, 4.5rem) auto 0;
 }
@@ -539,7 +542,7 @@ a:hover > .ch__arrow {
   color: var(--muted);
 }
 .cr__hint {
-  margin-top: 1.5rem;
+  margin-top: 1.1rem;
   opacity: 0.6;
 }
 html:not(.motion):not(.still) .cr__hint {
@@ -823,6 +826,7 @@ html:has(.lb[open]) {
 }
 .lb__stage {
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   min-height: 0;
   padding: 0 var(--pad) clamp(1rem, 3svh, 2.5rem);
@@ -830,7 +834,7 @@ html:has(.lb[open]) {
 }
 .lb__img {
   max-width: 100%;
-  max-height: calc(100dvh - 6.5rem);
+  max-height: 100%;
   width: auto;
   height: auto;
   cursor: default;
@@ -1073,5 +1077,15 @@ html.past-titles.hud-on .film--v1 .ch__count {
   .cr__foot i {
     width: 0.75rem;
     margin-inline: 0.5em;
+  }
+}
+
+/* phones: a long chapter title gives up tracking, not size */
+@media (max-width: 767px) {
+  .film--v1 .ch__title > [data-l].is-long {
+    font-size: min(8.4vw, calc(84vw / var(--len, 8) / 0.9));
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    margin-right: -0.14em;
   }
 }
