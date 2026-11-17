@@ -36,7 +36,7 @@ async function srcset(src: ImageMetadata, widths: number[], format: 'avif' | 'we
 }
 
 const WIDE = [640, 960, 1280, 1600, 1920, 2560];
-const TALL = [480, 720, 960, 1280, 1650];
+const TALL = [480, 640, 800, 1080, 1280, 1650];
 
 const wide = f.src
   ? {
@@ -48,7 +48,7 @@ const wide = f.src
   : null;
 const tall =
   useTall && f.tall
-    ? { avif: await srcset(f.tall, TALL, 'avif', 56), webp: await srcset(f.tall, TALL, 'webp', 72) }
+    ? { avif: await srcset(f.tall, TALL, 'avif', 50), webp: await srcset(f.tall, TALL, 'webp', 70) }
     : null;
 
 const style = [

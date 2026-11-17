@@ -19,6 +19,12 @@ if (hero && 'IntersectionObserver' in window) {
 // the running head comes back when the reader scrolls up, and leaves when the film plays on
 let anchorY = window.scrollY;
 let ticking = false;
+const progressBar = document.querySelector<HTMLElement>('.progress__bar');
+const paintProgress = (y: number) => {
+  if (!progressBar) return;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.transform = `scaleX(${max > 0 ? Math.min(1, Math.max(0, y / max)).toFixed(4) : 0})`;
+};
 window.addEventListener(
   'scroll',
   () => {
@@ -27,6 +33,7 @@ window.addEventListener(
     requestAnimationFrame(() => {
       ticking = false;
       const y = window.scrollY;
+      paintProgress(y);
       const shown = root.classList.contains('hud-on');
       // the anchor follows the scroll while it keeps its direction; a turn is measured from it
       if (shown ? y < anchorY : y > anchorY) anchorY = y;
@@ -112,7 +119,6 @@ if (motion && reels.length && roomy.matches && CSS.supports('height', '100svh'))
     });
   };
   window.addEventListener('scroll', onScroll, { passive: true });
-  update();
 
   // every height here is in viewport units, so a resize or a rotation would throw the reader
   // into another chapter: remember the part under the top edge and how far through it we are
@@ -130,7 +136,6 @@ if (motion && reels.length && roomy.matches && CSS.supports('height', '100svh'))
     }
   };
   window.addEventListener('scroll', remember, { passive: true });
-  remember();
   let lastW = window.innerWidth;
   window.addEventListener('resize', () => {
     // the mobile address bar changes the height only: that is not a new shape
@@ -154,6 +159,13 @@ if (motion && reels.length && roomy.matches && CSS.supports('height', '100svh'))
     }
     target?.scrollIntoView();
   }
+
+  // classes are written above; geometry is read once, after the browser has laid the page out
+  requestAnimationFrame(() => {
+    update();
+    remember();
+    paintProgress(window.scrollY);
+  });
 }
 
 /* ---------- reveals ---------- */
@@ -191,16 +203,6 @@ async function startMotion() {
     gsap.ticker.lagSmoothing(0);
     const onLightbox = (e: Event) => ((e as CustomEvent<boolean>).detail ? lenis.stop() : lenis.start());
     document.addEventListener('lightbox', onLightbox);
-
-    // progress of the film along the top edge
-    const bar = document.querySelector('.progress__bar');
-    if (bar) {
-      gsap.to(bar, {
-        scaleX: 1,
-        ease: 'none',
-        scrollTrigger: { start: 0, end: 'max', scrub: 0.4 },
-      });
-    }
 
     // the opening title drifts and dims as the first chapter arrives
     const title = document.querySelector('[data-titles-name]');
@@ -254,7 +256,11 @@ async function startMotion() {
   document.fonts.ready.then(() => ScrollTrigger.refresh());
 }
 
-if (motion) {
+// Smooth scrolling and the scroll-driven camera are for screens with a mouse or trackpad.
+// A phone scrolls natively and smoothly already, and keeps its processor for the pictures.
+const desk = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+if (motion && desk.matches) {
   // let the first screen paint before the libraries arrive
   const kick = () => void startMotion();
   if ('requestIdleCallback' in window) requestIdleCallback(kick, { timeout: 1500 });
