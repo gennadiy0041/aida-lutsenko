@@ -1,8 +1,9 @@
 ---
 /** Fixed film-grain layer over the whole page. Purely decorative. */
+import grain from '../assets/grain.webp';
 ---
 
-<div class="grain" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true" style={`background-image:url(${grain.src})`}></div>
 
 <style is:global>
   .grain {
@@ -10,7 +11,6 @@
     inset: -220px;
     z-index: 60;
     pointer-events: none;
-    background-image: url('/grain.webp');
     background-size: 220px 220px;
     opacity: 0.36;
     transform: translate3d(0, 0, 0);

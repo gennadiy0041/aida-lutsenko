@@ -1,0 +1,68 @@
+---
+import '@fontsource-variable/noto-serif-display/wght.css';
+import notoLatin from '@fontsource-variable/noto-serif-display/files/noto-serif-display-latin-wght-normal.woff2?url';
+import Base from '../layouts/Base.astro';
+import LangToggle from '../components/LangToggle.astro';
+import T from '../components/T.astro';
+
+const title = { en: 'Scene missing — Aida Lutsenko', ru: 'Сцена не найдена — Аида Луценко' };
+const description = { en: 'This scene is not in the film.', ru: 'Этой сцены в фильме нет.' };
+---
+
+<Base title={title} description={description} display="'Noto Serif Display Variable'" preload={[notoLatin]} noindex>
+  <main class="lost">
+    <header class="lost__bar">
+      <p class="credit credit--sand">404</p>
+      <LangToggle />
+    </header>
+    <div class="lost__body">
+      <h1 class="lost__title"><T t={{ en: 'Scene missing', ru: 'Сцена не найдена' }} /></h1>
+      <p class="lost__line"><T t={{ en: 'This scene is not in the film.', ru: 'Этой сцены в фильме нет.' }} /></p>
+      <a class="credit lost__link" href="/"><T t={{ en: 'Back to the opening titles', ru: 'К вступительным титрам' }} /></a>
+    </div>
+  </main>
+</Base>
+
+<style is:global>
+  .lost {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100svh;
+    --pad: clamp(1.25rem, 3.4vw, 3.75rem);
+  }
+  .lost__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: clamp(1.5rem, 3vw, 2.75rem) var(--pad);
+  }
+  .lost__bar p {
+    margin: 0;
+  }
+  .lost__body {
+    align-self: center;
+    justify-self: center;
+    padding: 2rem var(--pad) 6rem;
+    text-align: center;
+  }
+  .lost__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 6vw, 5.5rem);
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+    text-transform: uppercase;
+    line-height: 1.15;
+  }
+  .lost__line {
+    margin: 1.75rem 0 0;
+    color: var(--color-bone);
+  }
+  .lost__link {
+    display: inline-block;
+    margin-top: 2.75rem;
+    padding: 1rem 0 0.6rem;
+    border-bottom: 1px solid var(--color-sand);
+  }
+</style>

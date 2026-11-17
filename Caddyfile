@@ -1,0 +1,73 @@
+# Caddyfile (repo root). Railpack uses this instead of its built-in template
+# when it serves the Astro build output with Caddy.
+# NOTE: Railpack renders this file as a Go text/template at build time, so the
+# file must never contain two opening curly braces in a row (comments included).
+
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges 100.0.0.0/8
+	}
+}
+
+# Plain HTTP on the port Railway injects. Railway's edge terminates TLS.
+:{$PORT:8080} {
+	log {
+		format json
+	}
+
+	# Railpack copies the Astro build output to /app/dist.
+	root * /app/dist
+
+	# Railway healthcheck target (service setting: Healthcheck Path = /health).
+	respond /health 200
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Content-hashed build output: cache for a year, never revalidate.
+	@hashed path /_astro/*
+	header @hashed {
+		Cache-Control "public, max-age=31536000, immutable"
+		match status 2xx 304
+	}
+
+	# Everything else (HTML, favicon, OG image, robots.txt): always revalidate,
+	# so a deploy is visible on the next request.
+	@unhashed not path /_astro/*
+	header @unhashed {
+		Cache-Control "public, max-age=0, must-revalidate"
+		match status 2xx 304
+	}
+
+	encode zstd gzip
+
+	# Clean URLs through internal rewrites only: /moodboard and /moodboard/ both
+	# serve dist/moodboard/index.html. Unknown paths are real 404s.
+	try_files {path} {path}/index.html {path}.html
+
+	file_server {
+		hide .git
+		hide .env*
+		precompressed br zstd gzip
+	}
+
+	handle_errors 404 {
+		header {
+			Cache-Control "no-store"
+			X-Content-Type-Options "nosniff"
+		}
+		rewrite * /404.html
+		file_server
+	}
+}

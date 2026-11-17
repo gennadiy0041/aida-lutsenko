@@ -1,4 +1,4 @@
-// Generates the film-grain tile used by the fixed overlay (public/grain.webp).
+// Generates the film-grain tile used by the fixed overlay (src/assets/grain.webp).
 // Speckles are white or black with a small alpha, so plain alpha compositing is enough
 // (no mix-blend-mode over the whole page).
 import sharp from 'sharp';
@@ -28,5 +28,5 @@ for (let i = 0; i < SIZE * SIZE; i++) {
 const out = await sharp(px, { raw: { width: SIZE, height: SIZE, channels: 4 } })
   .webp({ quality: 50, alphaQuality: 50, effort: 6 })
   .toBuffer();
-writeFileSync(new URL('../public/grain.webp', import.meta.url), out);
-console.log('grain.webp', out.length, 'bytes');
+writeFileSync(new URL('../src/assets/grain.webp', import.meta.url), out);
+console.log('src/assets/grain.webp', out.length, 'bytes');
