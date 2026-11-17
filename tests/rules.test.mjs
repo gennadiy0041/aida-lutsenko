@@ -179,7 +179,8 @@ describe('private data', () => {
   });
 
   test('the patronymic, in any case form, Cyrillic or transliterated', () => {
-    catches('patronymic', ['Луценко Аида Александровна', 'Аиде Александровне', 'АИДА АЛЕКСАНДРОВНА ЛУЦЕНКО', 'Aida Aleksandrovna', 'Aida Alexandrovna Lutsenko']);
+    // the samples use another first name on purpose: the full name is not spelled out in this repository
+    catches('patronymic', ['Мария Александровна', 'Марии Александровне', 'МАРИЯ АЛЕКСАНДРОВНА', 'Maria Aleksandrovna', 'Maria Alexandrovna']);
     ignores('patronymic', ['Александр Пушкин', 'Александров', 'Alexander', 'Alexandria']);
   });
 

@@ -1,0 +1,57 @@
+{
+  "_readme": [
+    "Config for scripts/grade-frames.mjs. Copy it, keep the copy and the original photographs OUTSIDE the repository, then run:",
+    "  node scripts/grade-frames.mjs --config <this file> --src <folder with the originals> [--only f01,f02] [--dry-run]",
+    "",
+    "frames[]            one entry per original photograph. Keys that start with an underscore are ignored.",
+    "  id                short name of the frame: letters, digits, '-' and '_'. It is the default output file name",
+    "                    and the id used in src/data/frames.ts.",
+    "  file              the original, relative to --src. JPEG, PNG, WebP, AVIF or TIFF (export HEIC as JPEG first).",
+    "  outputs[]         what to make from it. Each output is graded the same way and written without any metadata.",
+    "    kind 'scope'    a 2.39:1 cinema frame  -> src/assets/frames/<name or id>.jpg, at most 2560 px wide.",
+    "      crop          { x, y, w } as fractions (0..1) of the upright picture: x, y = top-left corner, w = width.",
+    "                    The height follows from 2.39:1. Left out: x and y centre the crop, w is the full width.",
+    "                    A crop that runs past the edge is moved back inside. A crop narrower than 1477 px",
+    "                    (1920 / 1.3) is an error, unless the whole original is that small: then it is a warning.",
+    "    kind 'still'    the whole picture       -> src/assets/stills/<name or id>.jpg, at most 2200 px on the long side.",
+    "      crop          optional { x, y, w, h } as fractions of the upright picture.",
+    "    name            optional file name for this output (default: the frame id). Two outputs may not share a file.",
+    "  exposure          optional, in stops: 0.3 opens a dark picture, -0.3 calms a bright one. White stays ivory. Default 0.",
+    "  warmth            optional, -1..1: above 0 warmer (0.2 is a clear step), below 0 takes warmth out. The look keeps",
+    "                    cool colours grey, so a picture never turns blue. Default 0.",
+    "  strength          optional, 0..1: how much of the look is applied. 1 = the full grade, 0 = the corrected original",
+    "                    printed between ink and ivory. Default 1.",
+    "  rotate            optional, degrees clockwise, applied after the EXIF orientation. 90 / 180 / 270 turn the picture;",
+    "                    a small angle (for example -1.5) straightens a horizon, and the picture is then trimmed to the",
+    "                    largest clean rectangle of the same proportions. Crops are fractions of the result. Default 0.",
+    "",
+    "Nothing is ever upscaled, and nothing is written outside src/assets/frames and src/assets/stills.",
+    "The look itself (one grade for every picture) lives in scripts/grade.mjs."
+  ],
+  "frames": [
+    {
+      "id": "f01",
+      "file": "IMG_0001.jpg",
+      "outputs": [
+        { "kind": "scope", "crop": { "x": 0, "y": 0.31, "w": 1 } },
+        { "kind": "still", "name": "p01" }
+      ],
+      "exposure": 0,
+      "warmth": 0,
+      "strength": 1,
+      "rotate": 0
+    },
+    {
+      "_note": "a portrait original: the frame is a band across it, the still is the upper two thirds",
+      "id": "f02",
+      "file": "IMG_0002.jpg",
+      "outputs": [
+        { "kind": "scope", "crop": { "x": 0, "y": 0.22, "w": 1 } },
+        { "kind": "still", "name": "p02", "crop": { "x": 0, "y": 0, "w": 1, "h": 0.67 } }
+      ],
+      "exposure": 0.25,
+      "warmth": 0.1,
+      "rotate": -1.2
+    }
+  ]
+}

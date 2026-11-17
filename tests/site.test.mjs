@@ -10,7 +10,7 @@
  * Style      no gradients, no emoji
  * Structure  every page has its language, one <h1>, a title and a link preview; every link resolves
  * Bilingual  every English string has its Russian twin
- * Contact    the only e-mail address and the only Instagram account are the public ones
+ * Contact    the home page shows only the public e-mail address and Instagram account
  *
  * The rules live in tests/lib/rules.mjs. SITE_DIST=<dir> points the lane at another build output.
  */
@@ -123,7 +123,9 @@ function youngerSource() {
     if (stat.isDirectory()) { for (const entry of fs.readdirSync(abs)) look(path.join(abs, entry)); return; }
     if (stat.mtimeMs > built && (!newest || stat.mtimeMs > newest.mtimeMs)) newest = { abs, mtimeMs: stat.mtimeMs };
   };
-  for (const source of ['src', 'public', 'astro.config.mjs', 'package.json']) look(path.join(ROOT, source));
+  try {
+    for (const source of ['src', 'public', 'astro.config.mjs', 'package.json']) look(path.join(ROOT, source));
+  } catch { /* a file moved while we looked: the warning is optional */ }
   return newest && path.relative(ROOT, newest.abs).split(path.sep).join('/');
 }
 
@@ -281,11 +283,13 @@ if (site.missing) {
         const wanted = internalPath(url, origin, dir);
         if (wanted !== null && !served(wanted)) problems.push(`${at(file, index)}  ${from} → ${wanted}`);
       };
-      for (const page of pages) {
+      for (const page of site.documents) {
         for (const tag of page.html.tags) {
           // the canonical link names the page itself (for 404.html, an address that is meant not to exist)
           const canonical = tag.name === 'link' && /\bcanonical\b/i.test(tag.attrs.get('rel') ?? '');
           for (const attr of ['href', 'src', 'poster']) if (tag.attrs.has(attr) && !canonical) check(page, tag.index, tag.attrs.get(attr), `<${tag.name} ${attr}>`);
+          const redirect = tag.name === 'meta' && /^refresh$/i.test(tag.attrs.get('http-equiv') ?? '') && /url\s*=\s*['"]?([^'"\s;]+)/i.exec(tag.attrs.get('content') ?? '');
+          if (redirect) check(page, tag.index, redirect[1], '<meta refresh>');
           for (const attr of ['srcset', 'imagesrcset']) {
             for (const candidate of (tag.attrs.get(attr) ?? '').split(',')) {
               const url = candidate.trim().split(/\s+/)[0];
@@ -298,7 +302,7 @@ if (site.missing) {
       for (const sheet of textFiles.filter((f) => /\.css$/i.test(f.rel))) {
         for (const m of sheet.text.matchAll(CSS_URL)) check(sheet, m.index, m[1] ?? m[2] ?? m[3], 'CSS url()', path.posix.dirname(sheet.rel));
       }
-      expectNone(problems, 'A path that starts with "/" must be a file in the build ("/x" is x, x.html or x/index.html).');
+      expectNone(problems, 'A path that starts with "/" must be a file in the build: "/x" is x, x.html or x/index.html; "/x/" is x/index.html.');
     });
   });
 

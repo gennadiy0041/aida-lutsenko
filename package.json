@@ -11,7 +11,10 @@
     "preview": "astro preview",
     "test": "node --test tests/",
     "astro": "astro",
-    "grain": "node scripts/make-grain.mjs"
+    "grain": "node scripts/make-grain.mjs",
+    "frames": "node scripts/grade-frames.mjs",
+    "lut": "node scripts/make-lut.mjs",
+    "og": "node scripts/make-og.mjs"
   },
   "dependencies": {
     "@fontsource-variable/cormorant-garamond": "^5.3.0",
