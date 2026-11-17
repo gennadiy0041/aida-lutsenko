@@ -138,6 +138,7 @@
   }
   .gate__img {
     object-fit: cover;
+    object-position: var(--pos, 50% 50%);
     transform-origin: 50% 50%;
     backface-visibility: hidden;
   }
@@ -182,6 +183,26 @@
     }
     html.motion .gate--window .gate__img {
       animation: none;
+    }
+
+    /* a frame with an upright companion: the phone shows that picture, and the camera pushes in */
+    .gate--window.gate--tall .gate__pic {
+      width: 100%;
+      aspect-ratio: auto;
+      transform: none;
+    }
+    .gate--window.gate--tall .gate__img {
+      object-position: var(--pos-tall, 50% 50%);
+    }
+    html.motion .gate--window.gate--tall .gate__pic {
+      animation: none;
+    }
+    html.motion .gate--window.gate--tall .gate__img {
+      animation: cam-push var(--cam-dur, 38s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate both;
+      animation-play-state: paused;
+    }
+    html.motion .gate--window.gate--tall.is-live .gate__img {
+      animation-play-state: running;
     }
   }
 

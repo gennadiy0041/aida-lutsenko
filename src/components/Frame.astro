@@ -1,10 +1,13 @@
 ---
 /**
  * A cinema gate: one frame in 2.39:1 with a slow camera move.
- * `window` turns the gate into a tall pan-and-scan window on portrait phones:
- * the frame keeps its 2.39:1 proportion and the camera travels across it.
+ *
+ * `window` turns the gate into a tall window on portrait phones. If the frame has an upright
+ * companion (src/assets/stills/<id>-tall.jpg) the phone shows that picture; otherwise the wide
+ * frame keeps its 2.39:1 proportion and the camera travels across it.
  */
-import { Picture } from 'astro:assets';
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import { getFrame, type CameraMove } from '../data/frames';
 
 interface Props {
@@ -21,35 +24,69 @@ interface Props {
 const { id, slate, priority = false, window: asWindow = false, class: cls } = Astro.props;
 const f = getFrame(id);
 const move = Astro.props.move ?? f.move ?? 'push';
-const sizes = Astro.props.sizes ?? (asWindow ? '(max-width: 767px) and (orientation: portrait) 150svh, 100vw' : '100vw');
-const widths = f.src ? [640, 960, 1280, 1600, 1920, 2560].filter((w) => w <= f.src!.width) : [];
-if (f.src && !widths.includes(f.src.width) && f.src.width < 2560) widths.push(f.src.width);
+const useTall = asWindow && Boolean(f.tall);
+const PHONE = '(max-width: 767px) and (orientation: portrait)';
+const sizes = Astro.props.sizes ?? (asWindow && !useTall ? `${PHONE} 150svh, 100vw` : '100vw');
+
+async function srcset(src: ImageMetadata, widths: number[], format: 'avif' | 'webp' | 'jpg', quality: number) {
+  const ws = widths.filter((w) => w < src.width);
+  ws.push(Math.min(src.width, widths[widths.length - 1]));
+  const out = await Promise.all(ws.map((width) => getImage({ src, width, format, quality })));
+  return out.map((im, i) => `${im.src} ${ws[i]}w`).join(', ');
+}
+
+const WIDE = [640, 960, 1280, 1600, 1920, 2560];
+const TALL = [480, 720, 960, 1280, 1650];
+
+const wide = f.src
+  ? {
+      avif: await srcset(f.src, WIDE, 'avif', 58),
+      webp: await srcset(f.src, WIDE, 'webp', 74),
+      jpg: await srcset(f.src, WIDE, 'jpg', 78),
+      fallback: (await getImage({ src: f.src, width: Math.min(f.src.width, 1280), format: 'jpg', quality: 78 })).src,
+    }
+  : null;
+const tall =
+  useTall && f.tall
+    ? { avif: await srcset(f.tall, TALL, 'avif', 56), webp: await srcset(f.tall, TALL, 'webp', 72) }
+    : null;
+
+const style = [
+  f.pos && `--pos:${f.pos}`,
+  f.posTall && `--pos-tall:${f.posTall}`,
+  f.focusX != null && `--focus-x:${f.focusX}`,
+]
+  .filter(Boolean)
+  .join(';');
 ---
 
 <div
-  class:list={['gate', asWindow && 'gate--window', cls]}
+  class:list={['gate', asWindow && 'gate--window', useTall && 'gate--tall', cls]}
   data-move={move}
   data-frame={id}
-  style={f.focusX != null ? `--focus-x:${f.focusX}` : undefined}
+  style={style || undefined}
 >
   {
-    f.src ? (
-      <Picture
-        src={f.src}
-        formats={['avif', 'webp']}
-        fallbackFormat="jpg"
-        widths={widths}
-        sizes={sizes}
-        quality={62}
-        alt={f.alt.en}
-        data-alt-ru={f.alt.ru || undefined}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding={priority ? 'sync' : 'async'}
-        fetchpriority={priority ? 'high' : 'auto'}
-        class="gate__img"
-        style={f.pos ? `object-position:${f.pos}` : undefined}
-        pictureAttributes={{ class: 'gate__pic' }}
-      />
+    f.src && wide ? (
+      <picture class="gate__pic">
+        {tall && <source media={PHONE} type="image/avif" srcset={tall.avif} sizes="100vw" />}
+        {tall && <source media={PHONE} type="image/webp" srcset={tall.webp} sizes="100vw" />}
+        <source type="image/avif" srcset={wide.avif} sizes={sizes} />
+        <source type="image/webp" srcset={wide.webp} sizes={sizes} />
+        <img
+          class="gate__img"
+          src={wide.fallback}
+          srcset={wide.jpg}
+          sizes={sizes}
+          width={f.src.width}
+          height={f.src.height}
+          alt={f.alt.en}
+          data-alt-ru={f.alt.ru || undefined}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding={priority ? 'sync' : 'async'}
+          fetchpriority={priority ? 'high' : 'auto'}
+        />
+      </picture>
     ) : (
       <div class="slate" aria-hidden="true">
         <span class="slate__mark slate__mark--tl" />
