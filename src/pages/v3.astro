@@ -1,0 +1,431 @@
+---
+/**
+ * Variant 3 — TRAILER.
+ * The frame is pinned to the top edge and cuts between four shots, one per chapter.
+ * The name is set large and tight across the bottom edge of the frame.
+ */
+import '@fontsource-variable/playfair/opsz.css';
+import playfairLatin from '@fontsource-variable/playfair/files/playfair-latin-opsz-normal.woff2?url';
+import Base from '../layouts/Base.astro';
+import Frame from '../components/Frame.astro';
+import LangToggle from '../components/LangToggle.astro';
+import T from '../components/T.astro';
+import VariantNav from '../components/VariantNav.astro';
+import { person, titles, chapters } from '../data/copy';
+
+const title = { en: 'Aida Lutsenko — a film in four chapters', ru: 'Аида Луценко — фильм в четырёх главах' };
+const description = {
+  en: 'Quarry. Science. Commercialization. Code. The story of Aida Lutsenko, told as a film.',
+  ru: 'Карьер. Наука. Коммерциализация. Код. История Аиды Луценко, рассказанная как фильм.',
+};
+const shots = [
+  { id: 'f01', slate: '01', move: 'push' },
+  { id: 'f02', slate: '02', move: 'pan-right' },
+  { id: 'f03', slate: '03', move: 'pull' },
+  { id: 'f04', slate: '04', move: 'pan-left' },
+] as const;
+---
+
+<Base title={title} description={description} display="'Playfair Variable'" preload={[playfairLatin]} noindex>
+  <main class="v3">
+    <section class="v3-hero" aria-labelledby="v3-name" data-shot="0">
+      <div class="v3-reel">
+        {
+          shots.map((s, i) => (
+            <div class:list={['v3-shot', i === 0 && 'is-on']} data-shot-index={i} hidden={i > 0}>
+              <Frame id={s.id} slate={s.slate} priority={i === 0} window move={s.move} />
+            </div>
+          ))
+        }
+        <div class="v3-veil" aria-hidden="true"></div>
+        <div class="v3-curtain" aria-hidden="true"></div>
+
+        <header class="v3-top">
+          <p class="credit v3-in" style="--d:2.4s"><T t={titles.kicker} /></p>
+          <LangToggle class="v3-in" />
+        </header>
+        <p class="credit v3-tc v3-in" style="--d:2.8s" aria-hidden="true">
+          <span>TC</span><span class="v3-tc__val" data-timecode>00:00:00:00</span>
+        </p>
+      </div>
+
+      <h1 id="v3-name" class="v3-name">
+        <span class="v3-name__line"><span class="v3-name__in" style="--n:0"><T t={person.first} /></span></span>
+        <span class="v3-name__line"><span class="v3-name__in" style="--n:1"><T t={person.last} /></span></span>
+      </h1>
+
+      <div class="v3-foot">
+        <ol class="v3-index" aria-label="Chapters">
+          {
+            chapters.map((c, i) => (
+              <li class="v3-index__item credit" data-index={i}>
+                <span class="v3-index__n">{c.numeral}</span>
+                <T t={c.title} />
+              </li>
+            ))
+          }
+        </ol>
+        <span class="v3-progress" aria-hidden="true"><span class="v3-progress__bar"></span></span>
+        <a class="credit v3-cue v3-in" style="--d:3.2s" href="#chapter-i"><T t={titles.cue} /></a>
+      </div>
+    </section>
+
+    <section id="chapter-i" class="v3-chapter" aria-labelledby="v3-ch1">
+      <div class="v3-chapter__head">
+        <p class="v3-chapter__n" aria-hidden="true">I</p>
+        <h2 id="v3-ch1" class="v3-chapter__title"><T t={{ en: 'Quarry', ru: 'Карьер' }} /></h2>
+      </div>
+      <div class="v3-chapter__frame">
+        <Frame id="f02" slate="02" move="pan-right" />
+        <p class="v3-sub">
+          <T
+            t={{
+              en: 'Six years. A crew of forty-five. Almost all of them men.',
+              ru: 'Шесть лет. Сорок пять человек. Почти одни мужчины.',
+            }}
+          />
+        </p>
+      </div>
+    </section>
+
+    <VariantNav current={3} />
+  </main>
+</Base>
+
+<script>
+  const root = document.documentElement;
+  const hero = document.querySelector<HTMLElement>('.v3-hero');
+
+  if (hero && root.classList.contains('motion')) {
+    const shots = Array.from(hero.querySelectorAll<HTMLElement>('.v3-shot'));
+    const tc = hero.querySelector<HTMLElement>('[data-timecode]');
+    const HOLD = 4800; // ms per shot
+    let index = 0;
+    let visible = true;
+    let timer = 0;
+
+    const cut = () => {
+      shots[index].classList.remove('is-on');
+      index = (index + 1) % shots.length;
+      shots[index].classList.add('is-on');
+      hero.dataset.shot = String(index);
+      hero.classList.remove('is-rolling');
+      void hero.offsetWidth; // restart the progress line
+      hero.classList.add('is-rolling');
+    };
+    const play = () => {
+      window.clearInterval(timer);
+      if (visible && !document.hidden) timer = window.setInterval(cut, HOLD);
+    };
+
+    // the other three shots load only after the first screen is done
+    const arm = () => {
+      shots.forEach((s) => (s.hidden = false));
+      hero.classList.add('is-rolling');
+      play();
+    };
+    if (document.readyState === 'complete') window.setTimeout(arm, 2600);
+    else window.addEventListener('load', () => window.setTimeout(arm, 2600), { once: true });
+
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      play();
+    }).observe(hero);
+    document.addEventListener('visibilitychange', play);
+
+    // running timecode, 24 frames per second
+    if (tc) {
+      const start = performance.now();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      let last = -1;
+      const tick = (now: number) => {
+        if (visible && !document.hidden) {
+          const frames = Math.floor(((now - start) / 1000) * 24);
+          if (frames !== last) {
+            last = frames;
+            const s = Math.floor(frames / 24);
+            tc.textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}:${pad(frames % 24)}`;
+          }
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
+</script>
+
+<style is:global>
+  .v3 {
+    --pad: clamp(1.25rem, 3.4vw, 3.75rem);
+    /* the frame is full width unless the screen is too short for it */
+    --fw: min(100vw, calc((100svh - 11rem) * 2.39));
+    --fh: calc(var(--fw) / 2.39);
+    --name: clamp(3.5rem, calc(var(--fw) * 0.128), 15rem);
+  }
+
+  .v3-hero {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100svh;
+    min-height: 34rem;
+    background: var(--color-ink);
+  }
+  .v3-reel {
+    position: relative;
+    width: var(--fw);
+    height: var(--fh);
+    margin-inline: auto;
+    overflow: hidden;
+    background: #000;
+  }
+  .v3-shot {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-cut);
+  }
+  .v3-shot.is-on {
+    opacity: 1;
+    transition: opacity 0.9s 0.3s var(--ease-cut);
+  }
+  .v3-shot .gate {
+    height: 100%;
+  }
+  .v3-veil,
+  .v3-curtain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .v3-veil {
+    background: rgb(11 10 9 / 0.2);
+  }
+  .v3-curtain {
+    background: var(--color-ink);
+    opacity: 0;
+  }
+  .v3-top {
+    position: absolute;
+    inset: 0 0 auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 2.6vw, 2.5rem) var(--pad);
+  }
+  .v3-top p {
+    margin: 0;
+  }
+  .v3-tc {
+    position: absolute;
+    right: var(--pad);
+    bottom: clamp(1rem, 2vw, 1.75rem);
+    display: flex;
+    gap: 1em;
+    margin: 0;
+    color: var(--color-sand);
+  }
+  .v3-tc__val {
+    min-width: 11ch;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .v3-name {
+    position: absolute;
+    left: var(--pad);
+    top: calc(var(--fh) - var(--name) * 0.98);
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--name);
+    line-height: 0.86;
+    letter-spacing: -0.028em;
+    color: var(--color-ivory);
+  }
+  .v3-name__line {
+    display: block;
+    overflow: hidden;
+    padding: 0.06em 0.04em 0.16em 0;
+    margin-bottom: -0.16em;
+  }
+  .v3-name__in {
+    display: block;
+  }
+  /* wide screens: one line across the bottom edge of the frame */
+  @media (min-width: 768px) {
+    .v3-name {
+      display: flex;
+      gap: 0.24em;
+    }
+  }
+
+  .v3-foot {
+    align-self: end;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 1rem 2rem;
+    padding: 0 var(--pad) clamp(1.25rem, 3svh, 2.25rem);
+  }
+  .v3-index {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem clamp(1.25rem, 2.6vw, 2.75rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .v3-index__item {
+    opacity: 0.5;
+    transition: opacity 0.6s var(--ease-film);
+  }
+  .v3-index__n {
+    margin-right: 0.9em;
+    color: var(--color-sand);
+  }
+  .v3-hero[data-shot='0'] .v3-index__item[data-index='0'],
+  .v3-hero[data-shot='1'] .v3-index__item[data-index='1'],
+  .v3-hero[data-shot='2'] .v3-index__item[data-index='2'],
+  .v3-hero[data-shot='3'] .v3-index__item[data-index='3'] {
+    opacity: 1;
+  }
+  html.still .v3-index__item,
+  html:not(.motion) .v3-index__item {
+    opacity: 1;
+  }
+  .v3-progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: block;
+    height: 1px;
+    background: rgb(199 173 133 / 0.22);
+    overflow: hidden;
+  }
+  .v3-progress__bar {
+    display: block;
+    height: 100%;
+    background: var(--color-sand);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  .v3-hero.is-rolling .v3-progress__bar {
+    animation: v3-progress 4.8s linear both;
+  }
+  .v3-cue {
+    padding-block: 0.6rem;
+    margin-block: -0.6rem;
+  }
+
+  /* ---------- phones ---------- */
+  @media (max-width: 767px) and (orientation: portrait) {
+    .v3 {
+      --fw: 100vw;
+      --fh: 57svh;
+      --name: 21.5vw;
+    }
+    .v3-reel .gate--window {
+      --window-h: 100%;
+    }
+    .v3-name {
+      top: calc(var(--fh) - var(--name) * 0.62);
+      line-height: 0.9;
+    }
+    .v3-top .credit,
+    .v3-tc,
+    .v3-index__item,
+    .v3-cue {
+      font-size: 0.625rem;
+    }
+    .v3-tc {
+      bottom: auto;
+      top: 3.6rem;
+      right: var(--pad);
+    }
+    .v3-index {
+      gap: 0.3rem 1.3rem;
+    }
+  }
+
+  /* ---------- the intro ---------- */
+  html.motion .v3-curtain {
+    animation: v3-curtain 2.6s 0.2s var(--ease-film) both;
+  }
+  html.motion .v3-name__in {
+    animation: v3-rise 1.9s calc(0.9s + var(--n) * 0.16s) var(--ease-film) both;
+  }
+  html.motion .v3-in,
+  html.motion .v3-index,
+  html.motion .v3-progress {
+    animation: v3-in 1.5s var(--d, 2.6s) var(--ease-film) both;
+  }
+  @keyframes v3-curtain {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes v3-rise {
+    from { transform: translate3d(0, 112%, 0); }
+    to { transform: none; }
+  }
+  @keyframes v3-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes v3-progress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  /* ---------- how a chapter opens in this language ---------- */
+  .v3-chapter {
+    padding: clamp(6rem, 18svh, 12rem) 0 clamp(4rem, 10svh, 8rem);
+    background: var(--color-ink);
+  }
+  .v3-chapter__head {
+    display: flex;
+    align-items: baseline;
+    gap: clamp(1.25rem, 3vw, 3.5rem);
+    padding-inline: var(--pad);
+  }
+  .v3-chapter__n {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 3vw, 3rem);
+    color: var(--color-sand);
+  }
+  .v3-chapter__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(4.5rem, 15vw, 17rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+  }
+  .v3-chapter__frame {
+    position: relative;
+    margin-top: clamp(2rem, 5svh, 4rem);
+  }
+  .v3-sub {
+    position: absolute;
+    inset: auto 0 7% 0;
+    margin: 0;
+    padding-inline: var(--pad);
+    text-align: center;
+    font-size: clamp(0.9rem, 1.35vw, 1.35rem);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: var(--color-ivory);
+  }
+  @media (max-width: 767px) {
+    .v3-chapter__title {
+      font-size: 22vw;
+    }
+    .v3-sub {
+      position: static;
+      padding-top: 1.25rem;
+      text-align: left;
+      color: var(--color-bone);
+    }
+  }
+</style>

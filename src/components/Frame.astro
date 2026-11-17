@@ -1,0 +1,65 @@
+---
+/**
+ * A cinema gate: one frame in 2.39:1 with a slow camera move.
+ * `window` turns the gate into a tall pan-and-scan window on portrait phones:
+ * the frame keeps its 2.39:1 proportion and the camera travels across it.
+ */
+import { Picture } from 'astro:assets';
+import { getFrame, type CameraMove } from '../data/frames';
+
+interface Props {
+  id: string;
+  /** Slate label when the frame file does not exist yet, e.g. "01". */
+  slate?: string;
+  priority?: boolean;
+  sizes?: string;
+  move?: CameraMove;
+  window?: boolean;
+  class?: string;
+}
+
+const { id, slate, priority = false, window: asWindow = false, class: cls } = Astro.props;
+const f = getFrame(id);
+const move = Astro.props.move ?? f.move ?? 'push';
+const sizes = Astro.props.sizes ?? (asWindow ? '(max-width: 767px) and (orientation: portrait) 150svh, 100vw' : '100vw');
+const widths = f.src ? [640, 960, 1280, 1600, 1920, 2560].filter((w) => w <= f.src!.width) : [];
+if (f.src && !widths.includes(f.src.width) && f.src.width < 2560) widths.push(f.src.width);
+---
+
+<div
+  class:list={['gate', asWindow && 'gate--window', cls]}
+  data-move={move}
+  data-frame={id}
+  style={f.focusX != null ? `--focus-x:${f.focusX}` : undefined}
+>
+  {
+    f.src ? (
+      <Picture
+        src={f.src}
+        formats={['avif', 'webp']}
+        fallbackFormat="jpg"
+        widths={widths}
+        sizes={sizes}
+        quality={62}
+        alt={f.alt.en}
+        data-alt-ru={f.alt.ru || undefined}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding={priority ? 'sync' : 'async'}
+        fetchpriority={priority ? 'high' : 'auto'}
+        class="gate__img"
+        style={f.pos ? `object-position:${f.pos}` : undefined}
+        pictureAttributes={{ class: 'gate__pic' }}
+      />
+    ) : (
+      <div class="slate" aria-hidden="true">
+        <span class="slate__mark slate__mark--tl" />
+        <span class="slate__mark slate__mark--tr" />
+        <span class="slate__mark slate__mark--bl" />
+        <span class="slate__mark slate__mark--br" />
+        <span class="slate__label">
+          Frame {slate ?? id} <i>·</i> 2.39 : 1
+        </span>
+      </div>
+    )
+  }
+</div>

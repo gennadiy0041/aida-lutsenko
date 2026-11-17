@@ -1,0 +1,15 @@
+---
+/**
+ * Bilingual text. Both languages are in the DOM; CSS shows the one that matches <html lang>.
+ * Usage: <T t={{ en: 'Quarry', ru: 'Карьер' }} />
+ */
+import type { L } from '../data/copy';
+
+interface Props {
+  t: L;
+  class?: string;
+}
+const { t, class: cls } = Astro.props;
+---
+
+<span data-l="en" lang="en" class={cls}>{t.en}</span><span data-l="ru" lang="ru" class={cls}>{t.ru}</span>

@@ -1,0 +1,50 @@
+---
+/** EN / RU switch. English is the default; the choice is remembered in localStorage. */
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+---
+
+<div class:list={['lang', cls]} role="group" aria-label="Language / Язык">
+  <button type="button" class="lang__btn" data-set-lang="en" aria-pressed="true" lang="en" aria-label="English">EN</button>
+  <span class="lang__sep" aria-hidden="true"></span>
+  <button type="button" class="lang__btn" data-set-lang="ru" aria-pressed="false" lang="ru" aria-label="Русский">RU</button>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-set-lang]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const paint = () => {
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setLang === root.lang)));
+  };
+
+  const apply = (lang: string) => {
+    root.lang = lang;
+    try {
+      localStorage.setItem('lang', lang);
+    } catch {
+      /* private mode: the switch still works for this page view */
+    }
+    paint();
+    document.dispatchEvent(new CustomEvent('langchange', { detail: lang }));
+  };
+
+  buttons.forEach((b) =>
+    b.addEventListener('click', () => {
+      const lang = b.dataset.setLang!;
+      if (lang === root.lang) return;
+      if (reduce.matches) return apply(lang);
+      // a short dip to black between the two languages, like a cut
+      root.classList.add('lang-cut');
+      window.setTimeout(() => {
+        apply(lang);
+        requestAnimationFrame(() => root.classList.remove('lang-cut'));
+      }, 220);
+    }),
+  );
+
+  paint();
+</script>

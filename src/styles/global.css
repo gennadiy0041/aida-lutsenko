@@ -1,12 +1,255 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --color-ink: #0a0908;
-  --color-ivory: #f2ecdf;
-  --color-sand: #c2a878;
+  /* palette: black, ivory, sand */
+  --color-ink: #0b0a09;
+  --color-coal: #171411;
+  --color-ivory: #f1eadc;
+  --color-bone: #d6ccb9;
+  --color-sand: #c7ad85;
+  --color-dune: #8f7758;
+
+  --font-text: 'Inter Tight Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: var(--display-family, 'Times New Roman'), 'Times New Roman', Times, serif;
+
+  --ease-film: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-cut: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-html {
-  background: var(--color-ink);
-  color: var(--color-ivory);
+@layer base {
+  html {
+    background: var(--color-ink);
+    color: var(--color-ivory);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scrollbar-color: var(--color-dune) var(--color-ink);
+  }
+  html[data-theme='light'] {
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    scrollbar-color: var(--color-dune) var(--color-ivory);
+  }
+  body {
+    margin: 0;
+    min-height: 100svh;
+    overflow-x: clip;
+    font-family: var(--font-text);
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.55;
+    font-kerning: normal;
+    font-synthesis: none;
+  }
+  ::selection {
+    background: var(--color-sand);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 1px solid var(--color-sand);
+    outline-offset: 5px;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* language switch: both languages live in the DOM, one is shown */
+  html[lang='en'] [data-l='ru'],
+  html[lang='ru'] [data-l='en'] {
+    display: none !important;
+  }
+  main {
+    transition: opacity 0.22s linear;
+  }
+  html.lang-cut main {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  /* tiny tracked capitals: credits, labels, timecode */
+  .credit {
+    font-family: var(--font-text);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-feature-settings: 'tnum' 1, 'case' 1;
+  }
+  .credit--sand {
+    color: var(--color-sand);
+  }
+
+  /* EN / RU */
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9em;
+  }
+  .lang__btn {
+    appearance: none;
+    border: 0;
+    background: none;
+    padding: 1rem 0.15rem;
+    margin: -1rem 0;
+    cursor: pointer;
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.45;
+    transition: opacity 0.4s var(--ease-film);
+  }
+  .lang__btn:hover,
+  .lang__btn[aria-pressed='true'] {
+    opacity: 1;
+  }
+  .lang__sep {
+    width: 1.25rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.35;
+  }
+
+  /* the cinema gate: one frame, 2.39:1 */
+  .gate {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 239 / 100;
+    background: #000;
+    contain: paint;
+  }
+  .gate__pic,
+  .gate__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .gate__img {
+    object-fit: cover;
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+  }
+
+  /* slow camera movement across the frame */
+  [data-move='push'] { --cam: cam-push; }
+  [data-move='pull'] { --cam: cam-pull; }
+  [data-move='pan-left'] { --cam: cam-pan-left; }
+  [data-move='pan-right'] { --cam: cam-pan-right; }
+  [data-move='tilt-up'] { --cam: cam-tilt-up; }
+  [data-move='tilt-down'] { --cam: cam-tilt-down; }
+
+  html.motion .gate__img {
+    will-change: transform;
+    animation: var(--cam, cam-push) var(--cam-dur, 38s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate both;
+    animation-play-state: paused;
+  }
+  html.motion .gate.is-live .gate__img {
+    animation-play-state: running;
+  }
+
+  /* portrait phones: the gate becomes a tall window and the camera pans across the wide frame */
+  @media (max-width: 767px) and (orientation: portrait) {
+    .gate--window {
+      aspect-ratio: auto;
+      height: var(--window-h, 62svh);
+    }
+    .gate--window .gate__pic {
+      width: auto;
+      height: 100%;
+      aspect-ratio: 239 / 100;
+      max-width: none;
+      transform: translate3d(calc((100vw - 100%) * var(--focus-x, 0.5)), 0, 0);
+    }
+    html.motion .gate--window .gate__pic {
+      will-change: transform;
+      animation: window-pan var(--pan-dur, 46s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate both;
+      animation-play-state: paused;
+    }
+    html.motion .gate--window.is-live .gate__pic {
+      animation-play-state: running;
+    }
+    html.motion .gate--window .gate__img {
+      animation: none;
+    }
+  }
+
+  /* film-leader slate shown until a frame exists */
+  .slate {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: end center;
+    padding-bottom: 4.2%;
+    background: var(--color-coal);
+  }
+  .slate__mark {
+    position: absolute;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 0 solid rgb(199 173 133 / 0.45);
+  }
+  .slate__mark--tl { top: 5%; left: 2.1%; border-top-width: 1px; border-left-width: 1px; }
+  .slate__mark--tr { top: 5%; right: 2.1%; border-top-width: 1px; border-right-width: 1px; }
+  .slate__mark--bl { bottom: 5%; left: 2.1%; border-bottom-width: 1px; border-left-width: 1px; }
+  .slate__mark--br { bottom: 5%; right: 2.1%; border-bottom-width: 1px; border-right-width: 1px; }
+  .slate__label {
+    font-size: 0.625rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: rgb(199 173 133 / 0.5);
+  }
+  .slate__label i {
+    font-style: normal;
+    opacity: 0.6;
+    margin: 0 0.6em;
+  }
+}
+
+@keyframes cam-push {
+  from { transform: scale(1.02); }
+  to { transform: scale(1.13) translate3d(0, -0.8%, 0); }
+}
+@keyframes cam-pull {
+  from { transform: scale(1.14) translate3d(0, 0.8%, 0); }
+  to { transform: scale(1.02); }
+}
+@keyframes cam-pan-left {
+  from { transform: scale(1.1) translate3d(3.2%, 0, 0); }
+  to { transform: scale(1.1) translate3d(-3.2%, 0, 0); }
+}
+@keyframes cam-pan-right {
+  from { transform: scale(1.1) translate3d(-3.2%, 0, 0); }
+  to { transform: scale(1.1) translate3d(3.2%, 0, 0); }
+}
+@keyframes cam-tilt-up {
+  from { transform: scale(1.1) translate3d(0, 3%, 0); }
+  to { transform: scale(1.1) translate3d(0, -3%, 0); }
+}
+@keyframes cam-tilt-down {
+  from { transform: scale(1.1) translate3d(0, -3%, 0); }
+  to { transform: scale(1.1) translate3d(0, 3%, 0); }
+}
+@keyframes window-pan {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(calc(100vw - 100%), 0, 0); }
+}
+
+/* no motion: nothing moves, everything is simply there */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

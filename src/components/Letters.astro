@@ -1,0 +1,46 @@
+---
+/**
+ * A title split into letters so it can settle optically (tracking that closes in)
+ * using transforms only. Screen readers get the plain text.
+ */
+interface Props {
+  text: string;
+  class?: string;
+}
+const { text, class: cls } = Astro.props;
+const words = text.split(' ');
+let index = 0;
+---
+
+<span class="sr-only">{text}</span><span class:list={['letters', cls]} aria-hidden="true"
+  >{
+    words.map((word, wi) => {
+      const chars = [...word];
+      return (
+        <span class="letters__word" style={`--w:${(wi - (words.length - 1) / 2).toFixed(1)}`}>
+          {chars.map((ch, ci) => (
+            <span class="letters__ch" style={`--o:${(ci - (chars.length - 1) / 2).toFixed(1)};--i:${index++}`}>
+              {ch}
+            </span>
+          ))}
+        </span>
+      );
+    })
+  }</span
+>
+
+<style is:global>
+  .letters {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 0.5em;
+  }
+  .letters__word {
+    display: inline-flex;
+    white-space: nowrap;
+  }
+  .letters__ch {
+    display: inline-block;
+  }
+</style>

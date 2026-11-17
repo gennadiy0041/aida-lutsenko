@@ -1,0 +1,102 @@
+---
+import '../styles/global.css';
+import '@fontsource-variable/inter-tight/wght.css';
+import interLatin from '@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2?url';
+import Grain from '../components/Grain.astro';
+import type { L } from '../data/copy';
+
+interface Props {
+  title: L;
+  description: L;
+  /** CSS family name of the display serif used on this page. */
+  display: string;
+  /** Font files to preload (display serif, latin subset). */
+  preload?: string[];
+  theme?: 'dark' | 'light';
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+const { title, description, display, preload = [], theme = 'dark', ogImage = '/og.jpg', noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = new URL(ogImage, Astro.site);
+const themeColor = theme === 'light' ? '#f1eadc' : '#0b0a09';
+---
+
+<!doctype html>
+<html lang="en" data-theme={theme} style={`--display-family:${display}`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title.en}</title>
+    <meta name="description" content={description.en} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content={themeColor} />
+    <meta name="color-scheme" content={theme === 'light' ? 'light' : 'dark'} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aida Lutsenko" />
+    <meta property="og:title" content={title.en} />
+    <meta property="og:description" content={description.en} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aida Lutsenko" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="ru_RU" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title.en} />
+    <meta name="twitter:description" content={description.en} />
+    <meta name="twitter:image" content={og} />
+
+    {[...preload, interLatin].map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
+
+    <script is:inline define:vars={{ titleRu: title.ru, titleEn: title.en }}>
+      (function () {
+        var d = document.documentElement;
+        try {
+          var q = new URLSearchParams(location.search).get('lang');
+          var s = q || localStorage.getItem('lang');
+          if (s === 'ru' || s === 'en') d.lang = s;
+        } catch (e) {}
+        if (d.lang === 'ru') document.title = titleRu;
+        document.addEventListener('langchange', function (e) {
+          document.title = e.detail === 'ru' ? titleRu : titleEn;
+        });
+        var rm = window.matchMedia('(prefers-reduced-motion: reduce)');
+        d.classList.add(rm.matches ? 'still' : 'motion');
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <Grain />
+
+    <script>
+      const root = document.documentElement;
+
+      // alt texts follow the language
+      const swapAlts = () => {
+        document.querySelectorAll<HTMLImageElement>('img[data-alt-ru]').forEach((img) => {
+          if (!img.dataset.altEn) img.dataset.altEn = img.alt;
+          img.alt = root.lang === 'ru' ? img.dataset.altRu! : img.dataset.altEn!;
+        });
+      };
+      swapAlts();
+      document.addEventListener('langchange', swapAlts);
+
+      // the camera only moves while a frame is on screen
+      if (root.classList.contains('motion') && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => entries.forEach((e) => e.target.classList.toggle('is-live', e.isIntersecting)),
+          { rootMargin: '10% 0px' },
+        );
+        document.querySelectorAll('.gate').forEach((g) => io.observe(g));
+      }
+    </script>
+  </body>
+</html>

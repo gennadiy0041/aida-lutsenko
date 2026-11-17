@@ -1,0 +1,36 @@
+---
+/** Fixed film-grain layer over the whole page. Purely decorative. */
+---
+
+<div class="grain" aria-hidden="true"></div>
+
+<style is:global>
+  .grain {
+    position: fixed;
+    inset: -220px;
+    z-index: 60;
+    pointer-events: none;
+    background-image: url('/grain.webp');
+    background-size: 220px 220px;
+    opacity: 0.36;
+    transform: translate3d(0, 0, 0);
+  }
+  [data-theme='light'] .grain {
+    opacity: 0.3;
+  }
+  /* the grain "breathes": the tile jumps between offsets at film cadence */
+  html.motion .grain {
+    animation: grain-shift 0.9s steps(1, end) infinite;
+  }
+  @keyframes grain-shift {
+    0% { transform: translate3d(0, 0, 0); }
+    12% { transform: translate3d(-61px, 37px, 0); }
+    25% { transform: translate3d(43px, -89px, 0); }
+    37% { transform: translate3d(-97px, -23px, 0); }
+    50% { transform: translate3d(71px, 53px, 0); }
+    62% { transform: translate3d(-29px, 101px, 0); }
+    75% { transform: translate3d(113px, -47px, 0); }
+    87% { transform: translate3d(-83px, 67px, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+  }
+</style>

@@ -1,0 +1,72 @@
+---
+/** Temporary footer for the three hero variants: says which one this is and links to the others. */
+interface Props {
+  current: 1 | 2 | 3;
+}
+const { current } = Astro.props;
+const variants = [
+  { n: 1, name: { en: 'Title card', ru: 'Титр' } },
+  { n: 2, name: { en: 'Campaign', ru: 'Кампания' } },
+  { n: 3, name: { en: 'Trailer', ru: 'Трейлер' } },
+];
+---
+
+<nav class="vnav" aria-label="Variants">
+  <p class="credit vnav__label">
+    <span data-l="en" lang="en">Variant {current} of 3</span><span data-l="ru" lang="ru">Вариант {current} из 3</span>
+  </p>
+  <ul class="vnav__list">
+    {
+      variants.map((v) => (
+        <li>
+          <a class="credit vnav__link" href={`/v${v.n}`} aria-current={v.n === current ? 'page' : undefined}>
+            <span class="vnav__n">0{v.n}</span>
+            <span data-l="en" lang="en">{v.name.en}</span>
+            <span data-l="ru" lang="ru">{v.name.ru}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style is:global>
+  .vnav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem 2.5rem;
+    padding: 2.25rem clamp(1.25rem, 3.4vw, 3.75rem) calc(2.25rem + env(safe-area-inset-bottom));
+    border-top: 1px solid rgb(199 173 133 / 0.28);
+  }
+  .vnav__label {
+    margin: 0;
+    opacity: 0.6;
+  }
+  .vnav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .vnav__link {
+    display: inline-flex;
+    gap: 0.9em;
+    padding-block: 0.9rem;
+    opacity: 0.55;
+    transition: opacity 0.4s var(--ease-film);
+  }
+  .vnav__link:hover,
+  .vnav__link[aria-current='page'] {
+    opacity: 1;
+  }
+  .vnav__n {
+    color: var(--color-dune);
+  }
+  .vnav__link[aria-current='page'] .vnav__n {
+    color: var(--color-sand);
+  }
+</style>
