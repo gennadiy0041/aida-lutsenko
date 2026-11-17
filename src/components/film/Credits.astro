@@ -1,0 +1,154 @@
+---
+/**
+ * End credits: the credit roll (career, education, languages), award scans that open
+ * on click, press, contact and the closing line.
+ */
+import { Picture, getImage } from 'astro:assets';
+import Frame from '../Frame.astro';
+import T from '../T.astro';
+import { person } from '../../data/copy';
+import { awards, credits } from '../../data/film';
+
+const items = await Promise.all(
+  awards.map(async (a) => {
+    const large = await getImage({ src: a.image, width: Math.min(a.image.width, 1600), format: 'webp', quality: 82 });
+    return { ...a, large: large.src, ratio: a.image.width / a.image.height };
+  }),
+);
+---
+
+<section class="cr" id="credits" aria-labelledby="cr-title">
+  <div class="cr__frame" data-reveal="frame">
+    <Frame id="f10" slate="10" move="pull" window />
+  </div>
+
+  <h2 class="cr__title" id="cr-title" data-reveal><T t={credits.heading} /></h2>
+
+  <dl class="cr__roll">
+    {
+      credits.roles.map((r) => (
+        <div class="cr__row" data-reveal>
+          <dt class="credit"><T t={r.role} /></dt>
+          <dd><T t={r.detail} /></dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <div class="cr__block" id="awards">
+    <h3 class="credit cr__label" data-reveal><T t={credits.awardsHeading} /></h3>
+    <ul class="cr__sheet">
+      {
+        items.map((a, i) => (
+          <li class="cr__award" style={`--r:${a.ratio.toFixed(3)}`} data-reveal>
+            <button
+              type="button"
+              class="cr__scan"
+              data-award={a.large}
+              data-w={a.image.width}
+              data-h={a.image.height}
+              aria-haspopup="dialog"
+            >
+              <Picture
+                src={a.image}
+                formats={['avif', 'webp']}
+                widths={[160, 240, 360, 480, 720]}
+                sizes={`(max-width: 767px) ${Math.round(a.ratio * 42)}vw, ${Math.round(a.ratio * 14)}vw`}
+                quality={70}
+                alt={`${a.title.en}. ${a.from.en}, ${a.year}`}
+                data-alt-ru={`${a.title.ru}. ${a.from.ru}, ${a.year}`}
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+            <span class="credit cr__no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <ol class="cr__list">
+      {
+        items.map((a, i) => (
+          <li class="cr__item" data-reveal>
+            <span class="credit cr__item-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <span class="cr__item-title"><T t={a.title} /></span>
+            <span class="cr__item-from"><T t={a.from} /></span>
+            <span class="credit cr__item-year">{a.year}</span>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="credit cr__hint"><T t={credits.awardsHint} /></p>
+  </div>
+
+  <div class="cr__pair">
+    <div class="cr__block">
+      <h3 class="credit cr__label" data-reveal><T t={credits.pressHeading} /></h3>
+      <a class="cr__press" href={credits.press.href} target="_blank" rel="noopener" data-reveal>
+        <span class="cr__press-title"><T t={credits.press.title} /></span>
+        <span class="credit cr__press-meta">{credits.press.outlet}<i aria-hidden="true"></i><T t={credits.press.date} /></span>
+      </a>
+    </div>
+
+    <div class="cr__block" id="contact">
+      <h3 class="credit cr__label" data-reveal><T t={credits.contactHeading} /></h3>
+      <ul class="cr__contacts">
+        <li data-reveal><a class="cr__contact" href={`mailto:${person.email}`}>{person.email}</a></li>
+        <li data-reveal>
+          <a class="cr__contact" href={person.instagram.url} target="_blank" rel="noopener me">
+            <span class="credit">Instagram</span> {person.instagram.handle}
+          </a>
+        </li>
+        <li data-reveal><a class="credit cr__more" href="/moodboard"><T t={credits.moodboard} /><span class="ch__arrow" aria-hidden="true"></span></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cr__fin">
+    <p class="cr__closing" data-reveal><T t={credits.closing} /></p>
+    <p class="credit cr__closing-sub" data-reveal><T t={credits.closingSub} /></p>
+  </div>
+
+  <footer class="cr__foot">
+    <p class="credit"><T t={person.name} /><i aria-hidden="true"></i>MMXXVI</p>
+    <a class="credit" href="#top"><T t={credits.again} /></a>
+  </footer>
+
+  <dialog class="lb" id="lightbox" aria-label="Award scan" data-lenis-prevent>
+    <form method="dialog" class="lb__bar">
+      <p class="credit lb__cap" id="lightbox-cap"></p>
+      <button class="credit lb__close" value="close"><T t={credits.close} /></button>
+    </form>
+    <div class="lb__stage"><img class="lb__img" alt="" decoding="async" /></div>
+  </dialog>
+</section>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#lightbox');
+  if (dialog) {
+    const img = dialog.querySelector<HTMLImageElement>('.lb__img')!;
+    const cap = dialog.querySelector<HTMLElement>('#lightbox-cap')!;
+    let opener: HTMLElement | null = null;
+
+    document.querySelectorAll<HTMLButtonElement>('[data-award]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const thumb = btn.querySelector('img');
+        opener = btn;
+        img.width = Number(btn.dataset.w);
+        img.height = Number(btn.dataset.h);
+        img.src = btn.dataset.award!;
+        img.alt = thumb?.alt ?? '';
+        cap.textContent = thumb?.alt ?? '';
+        dialog.showModal();
+      });
+    });
+    // a click on the backdrop (outside the picture and the bar) closes the scan
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog || (e.target as HTMLElement).classList.contains('lb__stage')) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      img.removeAttribute('src');
+      opener?.focus();
+    });
+  }
+</script>

@@ -1,0 +1,678 @@
+---
+/**
+ * /moodboard — ten photographs laid out like a magazine: a cover, four spreads, a closing plate.
+ * Ivory paper, ink type. A public page: this link goes into the application form.
+ *
+ * Which photograph sits in which slot, and every word on the page: src/data/moodboard.ts.
+ */
+import '@fontsource-variable/cormorant-garamond/wght.css';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+import cormorantLatin from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2?url';
+import cormorantItalicLatin from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-italic.woff2?url';
+import Base from '../layouts/Base.astro';
+import LangToggle from '../components/LangToggle.astro';
+import Plate from '../components/Plate.astro';
+import T from '../components/T.astro';
+import { person, titles } from '../data/copy';
+import { board, getPlate } from '../data/moodboard';
+import { typoEn, typoRu } from '../data/typo';
+
+const langs = ['en', 'ru'] as const;
+/** The same typographic pass <T> applies, for the lines this page sets by hand. */
+const typo = { en: typoEn, ru: typoRu };
+const legend = ['p02', 'p03', 'p04'].map(getPlate);
+---
+
+<Base
+  title={board.pageTitle}
+  description={board.description}
+  display="'Cormorant Garamond Variable'"
+  preload={[cormorantLatin, cormorantItalicLatin]}
+  theme="light"
+>
+  <main class="mb">
+    <!-- cover: the masthead and the opening plate -->
+    <header class="mb-head">
+      <div class="mb-sheet">
+        <nav class="mb-bar" aria-label="Site">
+          <a class="credit mb-home" href="/">
+            <T t={person.name} /><span class="mb-home__film"><span class="mb-dash" aria-hidden="true"></span><T t={board.film} /></span>
+          </a>
+          <LangToggle />
+        </nav>
+
+        <h1 class="mb-mast">
+          {
+            langs.map((l) => (
+              <span data-l={l} lang={l}>
+                <span class="sr-only">{board.title[l]}</span>
+                <span class="mb-mast__set" aria-hidden="true">
+                  {[...board.title[l].toUpperCase()].map((ch) => (
+                    <span>{ch}</span>
+                  ))}
+                </span>
+              </span>
+            ))
+          }
+        </h1>
+
+        <div class="mb-strip">
+          <p class="credit mb-strip__issue"><T t={board.issue} /></p>
+          <p class="mb-deck">
+            {
+              langs.map((l) => (
+                <span data-l={l} lang={l}>
+                  {board.deck[l].map((sentence) => (
+                    <span class="mb-deck__s">{typo[l](sentence) + ' '}</span>
+                  ))}
+                </span>
+              ))
+            }
+          </p>
+          <p class="credit mb-strip__count"><T t={board.count} /></p>
+        </div>
+      </div>
+    </header>
+
+    <section class="mb-open">
+      <Plate id="p01" ratio="scope" vw={[100, 100]} priority class="mb-bleed" />
+    </section>
+
+    <!-- pp. 02–03: a tall portrait facing two small plates and their captions -->
+    <section class="mb-spread mb-a">
+      <div class="mb-sheet">
+        <figure class="mb-grid mb-a__grid">
+          <Plate as="div" caption="number" id="p02" ratio="portrait" vw={[42, 80]} class="mb-a__tall mb-rise" />
+          <Plate as="div" caption="number" id="p03" ratio="square" vw={[22.5, 44]} class="mb-a__one mb-rise" />
+          <Plate as="div" caption="number" id="p04" ratio="landscape" vw={[30.5, 44]} class="mb-a__two mb-rise" />
+          <figcaption class="mb-legend mb-rise">
+            <ol class="mb-legend__list credit">
+              {
+                legend.map((p) => (
+                  <li>
+                    <span class="mb-legend__no">
+                      <T t={board.plate} /> {p.no}
+                    </span>
+                    <span class="mb-legend__txt">
+                      <T t={p.caption} />
+                    </span>
+                  </li>
+                ))
+              }
+            </ol>
+          </figcaption>
+        </figure>
+        <footer class="mb-foot credit" aria-hidden="true">
+          <span class="mb-foot__no">02</span>
+          <span class="mb-foot__l"><T t={person.name} /></span>
+          <span class="mb-foot__r">
+            <span class="mb-foot__title"><T t={board.title} /><span class="mb-dash"></span></span><T t={board.issueShort} />
+          </span>
+          <span class="mb-foot__no">03</span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- pp. 04–05: a small plate in white space, a large pull-line -->
+    <section class="mb-spread mb-b">
+      <div class="mb-sheet">
+        <div class="mb-grid mb-b__grid">
+          <Plate id="p05" ratio="portrait" vw={[22.5, 59]} class="mb-b__plate mb-rise" />
+          <p class="mb-pull mb-rise">
+            {
+              langs.map((l) => (
+                <span data-l={l} lang={l}>
+                  {board.pull[l].map((line) => (
+                    <span class="mb-pull__line">{typo[l](line) + ' '}</span>
+                  ))}
+                </span>
+              ))
+            }
+          </p>
+        </div>
+        <footer class="mb-foot credit" aria-hidden="true">
+          <span class="mb-foot__no">04</span>
+          <span class="mb-foot__l"><T t={person.name} /></span>
+          <span class="mb-foot__r">
+            <span class="mb-foot__title"><T t={board.title} /><span class="mb-dash"></span></span><T t={board.issueShort} />
+          </span>
+          <span class="mb-foot__no">05</span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- pp. 06–07: a small square, a large plate that runs across the fold and off the page -->
+    <section class="mb-spread mb-c">
+      <div class="mb-sheet">
+        <div class="mb-grid mb-c__grid">
+          <Plate id="p06" ratio="square" vw={[22.5, 44]} class="mb-c__small mb-rise" />
+          <Plate id="p07" ratio="landscape" vw={[57.5, 100]} class="mb-c__wide mb-rise" />
+        </div>
+        <footer class="mb-foot credit" aria-hidden="true">
+          <span class="mb-foot__no">06</span>
+          <span class="mb-foot__l"><T t={person.name} /></span>
+          <span class="mb-foot__r">
+            <span class="mb-foot__title"><T t={board.title} /><span class="mb-dash"></span></span><T t={board.issueShort} />
+          </span>
+          <span class="mb-foot__no">07</span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- pp. 08–09: a diptych -->
+    <section class="mb-spread mb-d">
+      <div class="mb-sheet">
+        <div class="mb-grid mb-d__grid">
+          <Plate id="p08" ratio="portrait" vw={[30.5, 44]} class="mb-d__l mb-rise" />
+          <Plate id="p09" ratio="portrait" vw={[30.5, 44]} class="mb-d__r mb-rise" />
+        </div>
+        <footer class="mb-foot credit" aria-hidden="true">
+          <span class="mb-foot__no">08</span>
+          <span class="mb-foot__l"><T t={person.name} /></span>
+          <span class="mb-foot__r">
+            <span class="mb-foot__title"><T t={board.title} /><span class="mb-dash"></span></span><T t={board.issueShort} />
+          </span>
+          <span class="mb-foot__no">09</span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- pp. 10–11: the closing plate -->
+    <section class="mb-spread mb-close">
+      <Plate id="p10" ratio="scope" vw={[100, 100]} class="mb-bleed mb-rise" />
+      <div class="mb-sheet">
+        <footer class="mb-foot credit" aria-hidden="true">
+          <span class="mb-foot__no">10</span>
+          <span class="mb-foot__l"><T t={person.name} /></span>
+          <span class="mb-foot__r">
+            <span class="mb-foot__title"><T t={board.title} /><span class="mb-dash"></span></span><T t={board.issueShort} />
+          </span>
+          <span class="mb-foot__no">11</span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- back cover -->
+    <footer class="mb-end">
+      <div class="mb-sheet">
+        <p class="credit mb-end__label"><T t={board.next} /></p>
+        <p class="mb-end__film"><a href="/"><T t={titles.kicker} /></a></p>
+        <div class="mb-end__row credit">
+          <p><T t={board.title} /><span class="mb-dash" aria-hidden="true"></span><T t={board.issue} /></p>
+          <p>
+            <a href={person.instagram.url} rel="noopener">Instagram<span class="mb-dash" aria-hidden="true"></span>{person.instagram.handle}</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  </main>
+</Base>
+
+<script>
+  // Entrance: what lies below the first screen rises 12px and fades in as it enters view.
+  // Nothing is ever hidden without this script, with reduced motion, or under automation
+  // (screenshot tools and audits do not scroll, so they get the finished page).
+  const root = document.documentElement;
+
+  if (root.classList.contains('motion') && 'IntersectionObserver' in window && !navigator.webdriver) {
+    const fold = window.innerHeight * 0.94;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.remove('is-below');
+          io.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -6% 0px', threshold: 0.02 },
+    );
+    document.querySelectorAll<HTMLElement>('.mb-rise').forEach((el) => {
+      if (el.getBoundingClientRect().top < fold) return; // already on screen: leave it alone
+      el.classList.add('is-below');
+      io.observe(el);
+    });
+
+    // photographs that are still on their way fade in when they arrive
+    document.querySelectorAll<HTMLImageElement>('.plate__img[loading="lazy"]').forEach((img) => {
+      if (img.complete) return;
+      img.classList.add('is-loading');
+      const done = () => img.classList.remove('is-loading');
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    });
+  }
+</script>
+
+<style is:global>
+  .mb {
+    --umber: #6b563d;
+    --rule: rgb(11 10 9 / 0.2);
+    /* a spread is never wider than 1.76 screens are tall, so it always fits one screen */
+    --cap: 176svh;
+    /* on a wide, low screen the sheet is centred: this is the paper left on either side of it */
+    --edge: max(0px, (100vw - var(--cap)) / 2);
+    --pad: max(
+      clamp(1.25rem, min(3.4vw, calc(var(--cap) * 0.034)), 3.75rem),
+      env(safe-area-inset-left),
+      env(safe-area-inset-right)
+    );
+    --air: clamp(4.75rem, 10.5vw, 10.5rem);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mb .credit {
+    color: var(--color-ink);
+  }
+  .mb :focus-visible {
+    outline-color: var(--color-ink);
+  }
+  .mb a {
+    transition: color 0.4s var(--ease-film);
+  }
+  .mb a:hover {
+    color: var(--umber);
+  }
+
+  /* the sheet: one spread of paper; inside it 1cqw is 1% of the type area */
+  .mb-sheet {
+    width: 100%;
+    max-width: var(--cap);
+    margin-inline: auto;
+    padding-inline: var(--pad);
+    container-type: inline-size;
+  }
+  .mb-grid {
+    --g: 1.7cqw;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--g);
+  }
+  .mb-dash {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1px;
+    margin: 0 0.9em 0.3em;
+    background: currentColor;
+    opacity: 0.5;
+  }
+
+  /* ---------- cover ---------- */
+  .mb-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    height: clamp(3.75rem, 5.6cqw, 5.25rem);
+    border-bottom: 1px solid var(--rule);
+  }
+  .mb-home {
+    padding-block: 1rem;
+    white-space: nowrap;
+  }
+  /* the narrowest phones: the name alone is the way back */
+  @container (max-width: 19.5rem) {
+    .mb-home__film {
+      display: none;
+    }
+  }
+  .mb-mast {
+    padding-block: clamp(1rem, 2.5cqw, 2.6rem) clamp(0.9rem, 2.3cqw, 2.4rem);
+    font-family: var(--font-display);
+    font-weight: 300;
+    line-height: 0.8;
+  }
+  .mb-mast [data-l] {
+    display: block;
+  }
+  /* the nameplate runs from margin to margin: its letters are spread across the measure */
+  .mb-mast__set {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.4cqw;
+  }
+  .mb-mast [lang='ru'] .mb-mast__set {
+    font-size: 16.4cqw;
+  }
+  .mb-strip {
+    display: grid;
+    grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+    align-items: baseline;
+    gap: 0.5rem 2rem;
+    padding-block: clamp(0.8rem, 1.35cqw, 1.3rem) clamp(0.95rem, 1.6cqw, 1.5rem);
+    border-top: 1px solid var(--rule);
+  }
+  .mb-strip__count {
+    text-align: right;
+  }
+  .mb-deck {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.3rem, 1.95cqw, 2rem);
+    line-height: 1.15;
+    letter-spacing: 0.005em;
+    text-align: center;
+  }
+
+  /* full-bleed plates: the picture runs off both edges, the caption returns to the type area */
+  .mb-bleed .plate__cap {
+    width: 100%;
+    max-width: var(--cap);
+    margin-inline: auto;
+    padding-inline: var(--pad);
+  }
+
+  /* ---------- spreads ---------- */
+  .mb-spread {
+    padding-top: var(--air);
+  }
+  .mb-foot {
+    display: flex;
+    align-items: baseline;
+    gap: 1.75em;
+    margin-top: clamp(2.5rem, 4.4cqw, 4.25rem);
+    padding-top: 0.95rem;
+    border-top: 1px solid var(--rule);
+  }
+  .mb-foot__l,
+  .mb-foot__r {
+    color: var(--umber);
+  }
+  .mb-foot__r {
+    margin-left: auto;
+  }
+
+  /* pp. 02–03 */
+  .mb-a__grid {
+    grid-template-rows: auto 1fr auto;
+  }
+  /* the tall plate keeps its size and runs off the left edge of the screen */
+  .mb-a__tall {
+    grid-column: 1 / span 5;
+    grid-row: 1 / -1;
+    justify-self: start;
+    width: calc(100% + var(--pad));
+    margin-left: calc((var(--pad) + var(--edge)) * -1);
+  }
+  .mb-a__tall .plate__cap {
+    padding-left: calc(var(--pad) + var(--edge));
+  }
+  .mb-a__one {
+    grid-column: 7 / span 3;
+    grid-row: 1;
+  }
+  .mb-a__two {
+    grid-column: 9 / span 4;
+    grid-row: 3;
+  }
+  .mb-legend {
+    grid-column: 10 / span 3;
+    grid-row: 1;
+  }
+  .mb-legend__list {
+    border-bottom: 1px solid var(--rule);
+  }
+  .mb-legend__list li {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0 1.7em;
+    padding: 0.8rem 0 0.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  .mb-legend__no {
+    color: var(--umber);
+    white-space: nowrap;
+  }
+  @container (max-width: 62rem) {
+    .mb-legend__list li {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* pp. 04–05 */
+  .mb-b__grid {
+    align-items: end;
+  }
+  .mb-b__plate {
+    grid-column: 2 / span 3;
+  }
+  .mb-pull {
+    grid-column: 6 / span 7;
+    /* the last baseline sits on the bottom edge of the plate: caption height minus the descender space */
+    padding-bottom: calc(1.95rem - 0.195em);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 6.8cqw;
+    line-height: 1.02;
+    letter-spacing: -0.012em;
+  }
+  html[lang='ru'] .mb-pull {
+    font-size: 6.3cqw;
+  }
+  .mb-pull__line {
+    display: block;
+  }
+
+  /* pp. 06–07 */
+  .mb-c__small {
+    grid-column: 1 / span 3;
+  }
+  /* the wide plate keeps its size and runs off the right edge of the screen */
+  .mb-c__wide {
+    grid-column: 6 / span 7;
+    justify-self: end;
+    width: calc(100% + var(--pad));
+    margin-right: calc((var(--pad) + var(--edge)) * -1);
+  }
+
+  /* pp. 08–09 */
+  .mb-d__l {
+    grid-column: 3 / span 4;
+  }
+  .mb-d__r {
+    grid-column: 7 / span 4;
+  }
+  .mb-d__r .plate__cap {
+    justify-content: flex-end;
+  }
+
+  /* ---------- back cover ---------- */
+  .mb-end {
+    padding-block: var(--air) clamp(2rem, 4vw, 3.5rem);
+  }
+  .mb-end__film {
+    margin-top: clamp(0.9rem, 1.6cqw, 1.5rem);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(2.4rem, 6.2cqw, 7.5rem);
+    line-height: 1;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+  .mb-end__film a {
+    display: inline-block;
+    padding-bottom: 0.08em;
+    border-bottom: 1px solid var(--rule);
+    transition:
+      color 0.4s var(--ease-film),
+      border-color 0.5s var(--ease-film);
+  }
+  .mb-end__film a:hover {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-ink);
+  }
+  .mb-end__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-top: clamp(3rem, 7cqw, 7rem);
+    padding-top: 0.95rem;
+    border-top: 1px solid var(--rule);
+  }
+  .mb-end__row a {
+    display: inline-block;
+    padding-block: 0.75rem;
+    margin-block: -0.75rem;
+  }
+
+  /* ---------- phones: one column with a rhythm of its own ---------- */
+  @media (max-width: 767px) {
+    .mb-grid {
+      --g: 0.75rem;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      row-gap: 1.75rem;
+    }
+    .mb-bar .credit,
+    .mb-bar .lang__btn,
+    .mb-foot {
+      font-size: 0.625rem;
+    }
+    .mb-bar {
+      gap: 1rem;
+    }
+    .mb-home {
+      letter-spacing: 0.24em;
+    }
+    .mb-home .mb-dash {
+      width: 1rem;
+      margin-inline: 0.7em;
+    }
+    .mb-strip {
+      grid-template-columns: 1fr auto;
+    }
+    .mb-deck {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin-top: 0.55rem;
+      font-size: 1.5rem;
+      text-align: left;
+    }
+    .mb-deck__s {
+      display: block;
+    }
+    .mb-foot__title {
+      display: none;
+    }
+
+    /* a tall plate off the left edge, two small ones side by side, their captions */
+    .mb-a__grid {
+      grid-template-rows: none;
+    }
+    .mb-a__tall {
+      grid-column: 1 / span 5;
+      grid-row: auto;
+    }
+    .mb-a__one {
+      grid-column: 1 / span 3;
+      grid-row: auto;
+      align-self: end;
+    }
+    .mb-a__two {
+      grid-column: 4 / span 3;
+      grid-row: auto;
+      align-self: end;
+    }
+    .mb-legend {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
+    .mb-legend__list li {
+      grid-template-columns: max-content minmax(0, 1fr);
+    }
+
+    /* an inset plate with wide paper margins, then the line */
+    .mb-b__plate {
+      grid-column: 2 / span 4;
+    }
+    .mb-pull {
+      grid-column: 1 / -1;
+      margin-top: 0.75rem;
+      padding-bottom: 0;
+      font-size: 12.2cqw;
+    }
+    html[lang='ru'] .mb-pull {
+      font-size: 10.6cqw;
+    }
+
+    /* a small square with its caption beside it, then a plate from edge to edge */
+    .mb-c__small {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      column-gap: var(--g);
+      align-items: end;
+    }
+    .mb-c__small .plate__slot {
+      grid-column: 1 / span 3;
+    }
+    .mb-c__small .plate__cap {
+      grid-column: 4 / span 3;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 0 0 -0.2rem;
+    }
+    .mb-c__small .plate__dash {
+      display: none;
+    }
+    .mb-c__wide {
+      grid-column: 1 / -1;
+      justify-self: stretch;
+      width: auto;
+      margin-inline: calc((var(--pad) + var(--edge)) * -1);
+    }
+    .mb-c__wide .plate__cap {
+      padding-inline: calc(var(--pad) + var(--edge));
+    }
+
+    /* the diptych stays a diptych */
+    .mb-d__l {
+      grid-column: 1 / span 3;
+    }
+    .mb-d__r {
+      grid-column: 4 / span 3;
+    }
+    .mb-d__r .plate__cap {
+      justify-content: flex-start;
+    }
+
+    .mb-end__film {
+      font-size: 10.4cqw;
+    }
+    html[lang='ru'] .mb-end__film {
+      font-size: 9.4cqw;
+    }
+  }
+
+  /* ---------- motion ---------- */
+  .mb-a__one,
+  .mb-pull,
+  .mb-c__wide,
+  .mb-d__r {
+    --i: 1;
+  }
+  .mb-a__two {
+    --i: 2;
+  }
+  .mb-legend {
+    --i: 3;
+  }
+  html.motion .mb-rise {
+    transition:
+      opacity 1.2s cubic-bezier(0.3, 0, 0.3, 1) calc(var(--i, 0) * 0.11s),
+      transform 1.6s var(--ease-film) calc(var(--i, 0) * 0.11s);
+  }
+  html.motion .mb-rise.is-below {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    transition: none;
+  }
+  html.motion .plate__img {
+    transition: opacity 0.9s var(--ease-film);
+  }
+  html.motion .plate__img.is-loading {
+    opacity: 0;
+    transition: none;
+  }
+</style>

@@ -7,9 +7,9 @@ const { class: cls } = Astro.props;
 ---
 
 <div class:list={['lang', cls]} role="group" aria-label="Language / Язык">
-  <button type="button" class="lang__btn" data-set-lang="en" aria-pressed="true" lang="en" aria-label="English">EN</button>
+  <button type="button" class="lang__btn" data-set-lang="en" aria-pressed="true" lang="en" aria-label="EN: English">EN</button>
   <span class="lang__sep" aria-hidden="true"></span>
-  <button type="button" class="lang__btn" data-set-lang="ru" aria-pressed="false" lang="ru" aria-label="Русский">RU</button>
+  <button type="button" class="lang__btn" data-set-lang="ru" aria-pressed="false" lang="ru" aria-label="RU: Русский">RU</button>
 </div>
 
 <script>

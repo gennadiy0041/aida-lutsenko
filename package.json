@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build && node scripts/precompress.mjs",
     "preview": "astro preview",
+    "test": "node --test tests/",
     "astro": "astro",
     "grain": "node scripts/make-grain.mjs"
   },

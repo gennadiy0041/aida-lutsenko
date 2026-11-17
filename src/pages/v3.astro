@@ -10,8 +10,9 @@ import Base from '../layouts/Base.astro';
 import Frame from '../components/Frame.astro';
 import LangToggle from '../components/LangToggle.astro';
 import T from '../components/T.astro';
-import VariantNav from '../components/VariantNav.astro';
-import { person, titles, chapters } from '../data/copy';
+import FilmBody from '../components/film/FilmBody.astro';
+import { person, titles } from '../data/copy';
+import { chapters } from '../data/film';
 
 const title = { en: 'Aida Lutsenko — a film in four chapters', ru: 'Аида Луценко — фильм в четырёх главах' };
 const description = {
@@ -27,8 +28,8 @@ const shots = [
 ---
 
 <Base title={title} description={description} display="'Playfair Variable'" preload={[playfairLatin]} noindex>
-  <main class="v3">
-    <section class="v3-hero" aria-labelledby="v3-name" data-shot="0">
+  <main class="v3 film film--v3" id="top">
+    <section class="v3-hero" data-titles aria-labelledby="v3-name" data-shot="0">
       <div class="v3-reel">
         {
           shots.map((s, i) => (
@@ -49,7 +50,7 @@ const shots = [
         </p>
       </div>
 
-      <h1 id="v3-name" class="v3-name">
+      <h1 id="v3-name" class="v3-name" data-titles-name>
         <span class="v3-name__line"><span class="v3-name__in" style="--n:0"><T t={person.first} /></span></span>
         <span class="v3-name__line"><span class="v3-name__in" style="--n:1"><T t={person.last} /></span></span>
       </h1>
@@ -66,29 +67,11 @@ const shots = [
           }
         </ol>
         <span class="v3-progress" aria-hidden="true"><span class="v3-progress__bar"></span></span>
-        <a class="credit v3-cue v3-in" style="--d:3.2s" href="#chapter-i"><T t={titles.cue} /></a>
+        <a class="credit v3-cue v3-in" style="--d:3.2s" href="#quarry"><T t={titles.cue} /></a>
       </div>
     </section>
 
-    <section id="chapter-i" class="v3-chapter" aria-labelledby="v3-ch1">
-      <div class="v3-chapter__head">
-        <p class="v3-chapter__n" aria-hidden="true">I</p>
-        <h2 id="v3-ch1" class="v3-chapter__title"><T t={{ en: 'Quarry', ru: 'Карьер' }} /></h2>
-      </div>
-      <div class="v3-chapter__frame">
-        <Frame id="f02" slate="02" move="pan-right" />
-        <p class="v3-sub">
-          <T
-            t={{
-              en: 'Six years. A crew of forty-five. Almost all of them men.',
-              ru: 'Шесть лет. Сорок пять человек. Почти одни мужчины.',
-            }}
-          />
-        </p>
-      </div>
-    </section>
-
-    <VariantNav current={3} />
+    <FilmBody variant={3} />
   </main>
 </Base>
 
@@ -374,58 +357,5 @@ const shots = [
   @keyframes v3-progress {
     from { transform: scaleX(0); }
     to { transform: scaleX(1); }
-  }
-
-  /* ---------- how a chapter opens in this language ---------- */
-  .v3-chapter {
-    padding: clamp(6rem, 18svh, 12rem) 0 clamp(4rem, 10svh, 8rem);
-    background: var(--color-ink);
-  }
-  .v3-chapter__head {
-    display: flex;
-    align-items: baseline;
-    gap: clamp(1.25rem, 3vw, 3.5rem);
-    padding-inline: var(--pad);
-  }
-  .v3-chapter__n {
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: clamp(1.5rem, 3vw, 3rem);
-    color: var(--color-sand);
-  }
-  .v3-chapter__title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: clamp(4.5rem, 15vw, 17rem);
-    line-height: 0.9;
-    letter-spacing: -0.03em;
-  }
-  .v3-chapter__frame {
-    position: relative;
-    margin-top: clamp(2rem, 5svh, 4rem);
-  }
-  .v3-sub {
-    position: absolute;
-    inset: auto 0 7% 0;
-    margin: 0;
-    padding-inline: var(--pad);
-    text-align: center;
-    font-size: clamp(0.9rem, 1.35vw, 1.35rem);
-    font-weight: 400;
-    letter-spacing: 0.01em;
-    color: var(--color-ivory);
-  }
-  @media (max-width: 767px) {
-    .v3-chapter__title {
-      font-size: 22vw;
-    }
-    .v3-sub {
-      position: static;
-      padding-top: 1.25rem;
-      text-align: left;
-      color: var(--color-bone);
-    }
   }
 </style>

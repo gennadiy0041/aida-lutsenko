@@ -1,0 +1,1003 @@
+/*
+ * The film after the opening titles: chapters and end credits.
+ * One structure, three visual languages (the three first-screen variants):
+ *   .film--v1  title card  — black, centred, tracked capitals, credit-roll facts
+ *   .film--v2  campaign    — ivory paper, inset plates, large italic titles
+ *   .film--v3  trailer     — black, huge tight titles, burned-in subtitles
+ */
+
+.film {
+  --pad: clamp(1.25rem, 3.4vw, 3.75rem);
+  --rule: rgb(199 173 133 / 0.28);
+  --muted: var(--color-bone);
+  --accent: var(--color-sand);
+  --plate: 100vw;
+}
+.film--v2 {
+  --rule: rgb(11 10 9 / 0.2);
+  --muted: #453d34;
+  --accent: #6b563d;
+  --plate: 88vw;
+}
+.film :where(p, dl, dd, dt, ul, ol) {
+  margin: 0;
+  padding: 0;
+}
+.film :where(ul, ol) {
+  list-style: none;
+}
+
+/* ---------- reveals: only when motion is welcome and the observer is running ---------- */
+html.motion.io [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 1rem, 0);
+  transition:
+    opacity 1.2s var(--ease-film) var(--rd, 0s),
+    transform 1.4s var(--ease-film) var(--rd, 0s);
+}
+html.motion.io [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+html.motion.io [data-reveal='frame'] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(11% 0 11% 0);
+  transition: clip-path 1.7s var(--ease-cut);
+}
+html.motion.io [data-reveal='frame'].is-in {
+  clip-path: inset(0 0 0 0);
+}
+html.motion.io .ch__sub:nth-child(2) {
+  --rd: 0.22s;
+}
+
+/* a drawn arrow: a hairline with a small head */
+.ch__arrow {
+  position: relative;
+  display: inline-block;
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.5s var(--ease-film);
+}
+.ch__arrow::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+a:hover > .ch__arrow {
+  width: 2.75rem;
+}
+
+/* =====================================================================
+   CHAPTER — shared skeleton
+   ===================================================================== */
+.ch {
+  position: relative;
+}
+.ch__card {
+  display: grid;
+  justify-items: center;
+  padding: clamp(7rem, 24svh, 15rem) var(--pad) clamp(3rem, 9svh, 6.5rem);
+  text-align: center;
+}
+.ch__numeral,
+.ch__title {
+  font-family: var(--font-display);
+}
+.ch__title {
+  margin: 0;
+}
+.ch__scene + .ch__scene {
+  margin-top: clamp(3.5rem, 11svh, 8rem);
+}
+.ch__frame {
+  width: var(--plate);
+  margin-inline: auto;
+}
+.ch__sub {
+  text-wrap: balance;
+}
+.ch__end {
+  display: grid;
+  justify-items: center;
+  gap: clamp(2rem, 4vw, 3.25rem);
+  padding: clamp(3.5rem, 10svh, 7rem) var(--pad) 0;
+}
+.ch__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 1em;
+  padding: 1rem 0 0.75rem;
+  border-bottom: 1px solid var(--accent);
+}
+
+/* ---------- V1 · title card ---------- */
+.film--v1 .ch__slug {
+  color: var(--color-sand);
+}
+.film--v1 .ch__numeral {
+  margin-top: clamp(1.75rem, 3vw, 2.75rem);
+  font-weight: 200;
+  font-size: clamp(4.5rem, 10.5vw, 10.5rem);
+  line-height: 1;
+  color: var(--color-sand);
+}
+.film--v1 .ch__title {
+  margin-top: clamp(1.25rem, 2.4vw, 2.5rem);
+  font-weight: 300;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+/* tracked capitals: the size is fitted to the word, the trailing tracking is cancelled */
+.film--v1 .ch__title > [data-l],
+.film--v1 .cr__title > [data-l] {
+  font-size: clamp(1.05rem, min(4.3vw, calc(86vw / var(--len, 8) / 1.06)), 3.75rem);
+  letter-spacing: 0.34em;
+  margin-right: -0.34em;
+}
+.film--v1 .ch__years {
+  margin-top: clamp(1.5rem, 2.6vw, 2.5rem);
+  color: var(--muted);
+}
+.film--v1 .ch__subs {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: clamp(1.5rem, 3vw, 2.75rem) var(--pad) 0;
+  text-align: center;
+  font-size: clamp(1rem, 1.45vw, 1.4rem);
+  letter-spacing: 0.01em;
+}
+.film--v1 .ch__sub + .ch__sub {
+  color: var(--muted);
+}
+.film--v1 .ch__facts {
+  display: grid;
+  gap: 0.85rem;
+  width: min(100%, 50rem);
+}
+.film--v1 .ch__fact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(1rem, 2.4vw, 2rem);
+  align-items: baseline;
+}
+.film--v1 .ch__fact dt {
+  text-align: right;
+  color: var(--color-sand);
+}
+.film--v1 .ch__fact dd {
+  text-align: left;
+}
+
+/* ---------- V2 · campaign (ivory paper) ---------- */
+.film--v2 .credit {
+  color: var(--color-ink);
+}
+.film--v2 .ch__card {
+  grid-template-columns: 1fr auto;
+  justify-items: start;
+  align-items: baseline;
+  gap: 0 2rem;
+  padding-inline: calc((100vw - var(--plate)) / 2);
+  padding-bottom: clamp(3.5rem, 10svh, 7.5rem);
+  text-align: left;
+}
+.film--v2 .ch__slug {
+  grid-column: 1;
+  grid-row: 1;
+  color: var(--accent);
+}
+.film--v2 .ch__years {
+  grid-column: 2;
+  grid-row: 1;
+}
+.film--v2 .ch__numeral {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin-top: clamp(2rem, 5vw, 4.5rem);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.5rem, 2.4vw, 2.5rem);
+  line-height: 1;
+  color: var(--accent);
+}
+.film--v2 .ch__title {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: 0.06em;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 0.92;
+  letter-spacing: -0.012em;
+}
+.film--v2 .ch__title [data-l] {
+  font-size: clamp(2.6rem, min(15.5vw, calc(196vw / var(--len, 8))), 15rem);
+}
+.film--v2 .ch__subs {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem clamp(1.5rem, 5vw, 5rem);
+  width: var(--plate);
+  margin: clamp(1.25rem, 2.4vw, 2.25rem) auto 0;
+}
+.film--v2 .ch__sub:first-child {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.45rem, 2.7vw, 2.7rem);
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+}
+.film--v2 .ch__sub + .ch__sub {
+  justify-self: end;
+  max-width: 22rem;
+  padding-top: 0.5em;
+  font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+  font-weight: 400;
+  color: var(--muted);
+}
+.film--v2 .ch__end {
+  justify-items: start;
+  padding-inline: calc((100vw - var(--plate)) / 2);
+}
+.film--v2 .ch__facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem clamp(1rem, 2.4vw, 2.5rem);
+  width: 100%;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--rule);
+}
+.film--v2 .ch__fact dt {
+  margin-bottom: 0.55rem;
+  color: var(--accent);
+}
+.film--v2 .ch__fact dd {
+  font-size: 0.975rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* ---------- V3 · trailer ---------- */
+.film--v3 .ch__card {
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  align-items: baseline;
+  column-gap: clamp(1rem, 2.6vw, 3rem);
+  padding-bottom: clamp(1.5rem, 4svh, 3rem);
+  text-align: left;
+}
+.film--v3 .ch__slug {
+  grid-column: 1 / -1;
+  margin-bottom: clamp(1.25rem, 2.4vw, 2.25rem);
+  color: var(--color-sand);
+}
+.film--v3 .ch__numeral {
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.8vw, 3rem);
+  line-height: 1;
+  color: var(--color-sand);
+}
+.film--v3 .ch__title {
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+}
+.film--v3 .ch__title [data-l] {
+  font-size: clamp(2.6rem, min(15vw, calc(168vw / var(--len, 8))), 17rem);
+}
+.film--v3 .ch__years {
+  grid-column: 1 / -1;
+  margin-top: clamp(1rem, 2vw, 1.75rem);
+  color: var(--muted);
+}
+.film--v3 .ch__scene {
+  position: relative;
+}
+.film--v3 .ch__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(11 10 9 / 0.16);
+  pointer-events: none;
+}
+.film--v3 .ch__frame {
+  position: relative;
+}
+.film--v3 .ch__subs {
+  position: absolute;
+  inset: auto 0 7% 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  padding-inline: var(--pad);
+  text-align: center;
+  font-size: clamp(0.95rem, 1.5vw, 1.45rem);
+  font-weight: 400;
+  letter-spacing: 0.005em;
+}
+.film--v3 .ch__end {
+  justify-items: start;
+}
+.film--v3 .ch__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(1.5rem, 4vw, 4rem);
+  width: 100%;
+}
+.film--v3 .ch__fact {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--rule);
+}
+.film--v3 .ch__fact dt {
+  color: var(--color-sand);
+}
+
+/* ---------- chapters on phones ---------- */
+@media (max-width: 767px) {
+  .film {
+    --plate: 100vw;
+  }
+  .ch__card {
+    padding-top: clamp(5.5rem, 17svh, 9rem);
+  }
+  .ch .gate--window {
+    --window-h: 52svh;
+  }
+  .film--v1 .ch__subs {
+    font-size: 1.02rem;
+  }
+  .film--v1 .ch__title > [data-l],
+  .film--v1 .cr__title > [data-l] {
+    font-size: min(8.4vw, calc(84vw / var(--len, 8) / 1.1));
+  }
+  .film--v2 .ch__title [data-l] {
+    font-size: min(24vw, calc(186vw / var(--len, 8)));
+  }
+  .film--v3 .ch__title [data-l] {
+    font-size: min(21vw, calc(158vw / var(--len, 8)));
+  }
+  .film--v1 .ch__fact {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    row-gap: 0.25rem;
+  }
+  .film--v1 .ch__fact dt,
+  .film--v1 .ch__fact dd {
+    text-align: center;
+  }
+  .film--v1 .ch__facts {
+    gap: 1.4rem;
+  }
+  .film--v2 .ch__card,
+  .film--v2 .ch__end {
+    padding-inline: var(--pad);
+  }
+  .film--v2 .ch__card {
+    grid-template-columns: 1fr;
+  }
+  .film--v2 .ch__years {
+    grid-column: 1;
+    grid-row: 4;
+    margin-top: 1.25rem;
+  }
+  .film--v2 .ch__subs {
+    grid-template-columns: 1fr;
+    width: auto;
+    margin-inline: var(--pad);
+  }
+  .film--v2 .ch__sub + .ch__sub {
+    justify-self: start;
+    padding-top: 0;
+  }
+  .film--v2 .ch__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .film--v3 .ch__subs {
+    position: static;
+    justify-items: start;
+    padding-top: 1.25rem;
+    text-align: left;
+    font-size: 1.02rem;
+    font-weight: 300;
+  }
+  .film--v3 .ch__sub + .ch__sub {
+    color: var(--muted);
+  }
+  .film--v3 .ch__facts {
+    grid-template-columns: 1fr;
+  }
+  .film--v3 .ch__fact {
+    grid-template-columns: 6.5rem 1fr;
+  }
+}
+
+/* =====================================================================
+   END CREDITS
+   ===================================================================== */
+.cr {
+  padding-top: clamp(6rem, 20svh, 13rem);
+}
+.cr__frame {
+  width: var(--plate);
+  margin-inline: auto;
+}
+.cr__title {
+  margin: clamp(4rem, 12svh, 8rem) 0 0;
+  padding-inline: var(--pad);
+  font-family: var(--font-display);
+  text-align: center;
+}
+.cr__roll {
+  display: grid;
+  gap: 1.05rem;
+  width: min(100% - 2 * var(--pad), 58rem);
+  margin: clamp(2.5rem, 6svh, 4.5rem) auto 0;
+}
+.cr__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(1rem, 2.4vw, 2rem);
+  align-items: baseline;
+}
+.cr__row dt {
+  text-align: right;
+  color: var(--accent);
+}
+.cr__row dd {
+  text-align: left;
+  text-wrap: balance;
+}
+.cr__block {
+  margin-top: clamp(4.5rem, 13svh, 9rem);
+  padding-inline: var(--pad);
+}
+.cr__label {
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--accent);
+}
+
+/* award scans: a contact sheet. One row, one height; each scan keeps its own proportion */
+.cr__sheet {
+  display: flex;
+  gap: clamp(0.75rem, 1.8vw, 1.75rem);
+  margin-top: clamp(1.75rem, 3vw, 2.75rem);
+}
+.cr__award {
+  flex: var(--r) 1 0;
+  min-width: 0;
+}
+.cr__scan {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.cr__scan picture,
+.cr__scan img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.cr__scan img {
+  filter: grayscale(1) sepia(0.28) brightness(0.84) contrast(1.05);
+  transition: filter 0.7s var(--ease-film);
+}
+.film--v2 .cr__scan img {
+  filter: grayscale(1) sepia(0.28) brightness(0.98) contrast(1.02);
+  outline: 1px solid var(--rule);
+}
+.cr__scan:hover img,
+.cr__scan:focus-visible img {
+  filter: none;
+}
+.cr__no {
+  display: block;
+  margin-top: 0.8rem;
+  color: var(--accent);
+}
+.cr__list {
+  margin-top: clamp(2rem, 4vw, 3.25rem);
+  border-bottom: 1px solid var(--rule);
+}
+.cr__item {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) minmax(0, 1.25fr) 4.5rem;
+  column-gap: clamp(1rem, 2.4vw, 2.5rem);
+  align-items: baseline;
+  padding: 1rem 0;
+  border-top: 1px solid var(--rule);
+}
+.cr__item-no,
+.cr__item-year {
+  color: var(--accent);
+}
+.cr__item-year {
+  text-align: right;
+}
+.cr__item-title {
+  font-weight: 400;
+}
+.cr__item-from {
+  color: var(--muted);
+}
+.cr__hint {
+  margin-top: 1.5rem;
+  opacity: 0.6;
+}
+
+.cr__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.cr__press {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.6rem;
+}
+.cr__press-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.35rem, 2.3vw, 2.3rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.film--v2 .cr__press-title {
+  font-style: italic;
+  font-weight: 400;
+}
+.cr__press-meta {
+  color: var(--accent);
+}
+.cr i[aria-hidden] {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1px;
+  margin: 0 0.8em 0.3em;
+  background: currentColor;
+  opacity: 0.5;
+}
+.cr__contacts {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1.4rem;
+}
+.cr__contact {
+  display: inline-block;
+  padding: 0.3rem 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.25rem, 2.3vw, 2.3rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.film--v2 .cr__contact {
+  font-weight: 400;
+}
+.cr__contact .credit {
+  margin-right: 0.6em;
+  vertical-align: 0.5em;
+  color: var(--accent);
+}
+.cr__contact:hover,
+.cr__press:hover .cr__press-title {
+  color: var(--accent);
+}
+.cr__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 1em;
+  margin-top: 1.25rem;
+  padding: 1rem 0 0.75rem;
+  border-bottom: 1px solid var(--accent);
+}
+
+.cr__fin {
+  display: grid;
+  justify-items: center;
+  gap: 1.75rem;
+  padding: clamp(7rem, 26svh, 16rem) var(--pad) clamp(6rem, 22svh, 13rem);
+  text-align: center;
+}
+.cr__closing {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4.2vw, 4.25rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.cr__closing-sub {
+  color: var(--accent);
+}
+.cr__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.75rem var(--pad) calc(1.75rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--rule);
+}
+.cr__foot a {
+  padding: 0.75rem 0;
+}
+
+/* ---------- credits per language ---------- */
+.film--v1 .cr__title {
+  font-weight: 300;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.film--v2 .cr__title {
+  padding-inline: calc((100vw - var(--plate)) / 2);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(3.5rem, 13vw, 13rem);
+  line-height: 0.92;
+  text-align: left;
+}
+.film--v2 .cr__block,
+.film--v2 .cr__foot {
+  padding-inline: calc((100vw - var(--plate)) / 2);
+}
+.film--v2 .cr__pair {
+  padding-inline: calc((100vw - var(--plate)) / 2);
+  column-gap: clamp(1.5rem, 5vw, 5rem);
+}
+.film--v2 .cr__pair .cr__block {
+  padding-inline: 0;
+}
+.film--v2 .cr__roll {
+  width: var(--plate);
+  gap: 0;
+}
+.film--v2 .cr__row,
+.film--v3 .cr__row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--rule);
+}
+.film--v2 .cr__row dt,
+.film--v3 .cr__row dt {
+  text-align: left;
+}
+.film--v2 .cr__row dd {
+  font-weight: 400;
+}
+.film--v2 .cr__closing {
+  font-style: italic;
+  font-weight: 400;
+}
+.film--v3 .cr__title {
+  font-weight: 400;
+  font-size: clamp(3.5rem, 15vw, 17rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-align: left;
+}
+.film--v3 .cr__roll {
+  width: calc(100% - 2 * var(--pad));
+  gap: 0;
+}
+.film--v3 .cr__closing {
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 767px) {
+  .cr__row,
+  .film--v2 .cr__row,
+  .film--v3 .cr__row {
+    grid-template-columns: 1fr;
+    row-gap: 0.3rem;
+  }
+  .film--v1 .cr__row dt,
+  .film--v1 .cr__row dd {
+    text-align: center;
+  }
+  .film--v1 .cr__roll {
+    gap: 1.5rem;
+  }
+  /* two scans a row: one upright, one wide, so every row has the same height */
+  .cr__sheet {
+    flex-wrap: wrap;
+    gap: 1.25rem 0.9rem;
+  }
+  .cr__award {
+    flex: var(--r) 1 calc(var(--r) * 38vw);
+  }
+  .cr__item {
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    row-gap: 0.2rem;
+  }
+  .cr__item-title {
+    grid-column: 2;
+  }
+  .cr__item-year {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .cr__item-from {
+    grid-column: 2 / -1;
+    font-size: 0.92rem;
+  }
+  .cr__pair {
+    grid-template-columns: 1fr;
+  }
+  .film--v2 .cr__title,
+  .film--v2 .cr__block,
+  .film--v2 .cr__foot,
+  .film--v2 .cr__pair {
+    padding-inline: var(--pad);
+  }
+  .film--v2 .cr__roll {
+    width: calc(100% - 2 * var(--pad));
+  }
+  .cr .gate--window {
+    --window-h: 52svh;
+  }
+}
+
+/* =====================================================================
+   LIGHTBOX for award scans
+   ===================================================================== */
+.lb {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(11 10 9 / 0.97);
+  color: var(--color-ivory);
+}
+.lb::backdrop {
+  background: rgb(11 10 9 / 0.97);
+}
+.lb[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.lb .credit {
+  color: var(--color-ivory);
+}
+.lb__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  margin: 0;
+  padding: 1rem var(--pad);
+}
+.lb__cap {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+.lb__close {
+  flex: none;
+  padding: 0.9rem 0 0.7rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-sand);
+  background: none;
+  cursor: pointer;
+}
+.lb__stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0 var(--pad) clamp(1rem, 3svh, 2.5rem);
+  cursor: zoom-out;
+}
+.lb__img {
+  max-width: 100%;
+  max-height: calc(100dvh - 6.5rem);
+  width: auto;
+  height: auto;
+  cursor: default;
+}
+
+/* =====================================================================
+   HUD — the running head. Hidden while the film plays (scrolling down),
+   back when the reader scrolls up. The 1px progress line always stays.
+   ===================================================================== */
+.hud {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.35rem var(--pad);
+  background: var(--color-ink);
+  border-bottom: 1px solid var(--rule);
+  visibility: hidden;
+  transform: translate3d(0, -101%, 0);
+  transition:
+    transform 0.6s var(--ease-film),
+    visibility 0s linear 0.6s;
+}
+.film--v2 .hud {
+  background: var(--color-ivory);
+}
+html.past-titles.hud-on .hud,
+html.past-titles .hud:focus-within {
+  visibility: visible;
+  transform: none;
+  transition:
+    transform 0.6s var(--ease-film),
+    visibility 0s;
+}
+.hud__name {
+  padding: 0.85rem 0;
+}
+.hud__chapter {
+  margin-right: auto;
+  color: var(--accent);
+}
+.hud__chapter:empty {
+  display: none;
+}
+.progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 41;
+  height: 1px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.progress__bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+@media (max-width: 767px) {
+  .hud__chapter {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   VARIANT 1 — full-screen title cards and the projector
+   ===================================================================== */
+.film--v1 .ch__card {
+  min-height: 100svh;
+  align-content: center;
+  padding-block: var(--bar, 6rem);
+}
+.ch__tag,
+.ch__count {
+  display: none;
+}
+.film .credit > i {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1px;
+  margin: 0 0.8em 0.3em;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+/*
+ * The projector. With motion on, a chapter's reel becomes tall and its screen sticks to the
+ * viewport: the frame is held in the letterbox, the scenes dissolve into each other and the
+ * subtitles change as the reader scrolls. Without motion none of this applies and the reel
+ * reads as plain content: frame, lines, frame, lines.
+ */
+html.reel .film--v1 .ch__reel {
+  height: calc(100svh + var(--beats) * 40svh);
+}
+html.reel .film--v1 .ch__screen {
+  position: sticky;
+  top: 0;
+  display: grid;
+  height: 100svh;
+  overflow: hidden;
+}
+html.reel .film--v1 .ch__reel [data-reveal] {
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+  transition: none;
+}
+html.reel .film--v1 .ch__scene {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-rows: minmax(var(--bar), 1fr) auto minmax(var(--bar), 1fr);
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 1.2s var(--ease-cut),
+    visibility 0s linear 1.2s;
+}
+html.reel .film--v1 .ch__scene.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 1.2s var(--ease-cut),
+    visibility 0s;
+}
+html.reel .film--v1 .ch__frame {
+  grid-row: 2;
+  width: min(100vw, calc((100svh - 2 * var(--bar)) * 2.39));
+}
+html.reel .film--v1 .ch__reel .ch__subs {
+  grid-row: 3;
+  display: grid;
+  place-items: center;
+  gap: 0;
+  padding: 0 var(--pad);
+  font-size: clamp(1.05rem, 1.6vw, 1.55rem);
+}
+html.reel .film--v1 .ch__reel .ch__sub {
+  grid-area: 1 / 1;
+  max-width: 46rem;
+  color: var(--color-ivory);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-cut);
+}
+html.reel .film--v1 .ch__reel .ch__sub.is-on {
+  opacity: 1;
+  transition: opacity 0.7s var(--ease-cut) 0.3s;
+}
+html.reel .film--v1 .ch__tag,
+html.reel .film--v1 .ch__count {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--bar) / 2);
+  display: block;
+  transform: translateY(-50%);
+}
+html.reel .film--v1 .ch__tag {
+  left: var(--pad);
+  color: var(--color-sand);
+}
+html.reel .film--v1 .ch__count {
+  right: var(--pad);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 767px) and (orientation: portrait) {
+  html.reel .film--v1 .ch__scene {
+    grid-template-rows: 3.75rem minmax(0, 1fr) 10.5rem;
+  }
+  html.reel .film--v1 .ch__frame {
+    width: 100vw;
+    min-height: 0;
+  }
+  html.reel .film--v1 .ch__frame .gate--window {
+    --window-h: 100%;
+    height: 100%;
+  }
+  html.reel .film--v1 .ch__tag,
+  html.reel .film--v1 .ch__count {
+    top: 1.875rem;
+    font-size: 0.625rem;
+  }
+  html.reel .film--v1 .ch__reel .ch__subs {
+    font-size: 1.08rem;
+  }
+}

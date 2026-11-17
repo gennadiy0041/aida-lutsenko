@@ -1,0 +1,13 @@
+---
+/** A quiet fixed line that appears once the opening titles are behind: name, chapter, language, progress. */
+import LangToggle from '../LangToggle.astro';
+import T from '../T.astro';
+import { person } from '../../data/copy';
+---
+
+<span class="progress" aria-hidden="true"><span class="progress__bar"></span></span>
+<div class="hud" data-hud>
+  <a class="credit hud__name" href="#top"><T t={person.name} /></a>
+  <span class="credit hud__chapter" data-hud-chapter aria-hidden="true"></span>
+  <LangToggle />
+</div>

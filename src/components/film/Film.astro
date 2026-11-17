@@ -1,0 +1,33 @@
+---
+/**
+ * The whole film in the chosen language (variant 1, "title card"):
+ * opening titles, four chapters, end credits.
+ */
+import '@fontsource-variable/noto-serif-display/wght.css';
+import notoLatin from '@fontsource-variable/noto-serif-display/files/noto-serif-display-latin-wght-normal.woff2?url';
+import Base from '../../layouts/Base.astro';
+import Titles from './Titles.astro';
+import FilmBody from './FilmBody.astro';
+import T from '../T.astro';
+import { meta } from '../../data/copy';
+
+interface Props {
+  /** Set on /v1 only: shows the "variant 1 of 3" footer and keeps the page out of search. */
+  variant?: 1;
+}
+const { variant } = Astro.props;
+---
+
+<Base
+  title={meta.title}
+  description={meta.description}
+  display="'Noto Serif Display Variable'"
+  preload={[notoLatin]}
+  noindex={Boolean(variant)}
+>
+  <a class="credit skip" href="#quarry"><T t={{ en: 'Skip the titles', ru: 'Пропустить титры' }} /></a>
+  <main class="v1 film film--v1" id="top">
+    <Titles />
+    <FilmBody variant={variant} />
+  </main>
+</Base>

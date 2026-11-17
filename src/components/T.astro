@@ -4,6 +4,7 @@
  * Usage: <T t={{ en: 'Quarry', ru: 'Карьер' }} />
  */
 import type { L } from '../data/copy';
+import { typoEn, typoRu } from '../data/typo';
 
 interface Props {
   t: L;
@@ -12,4 +13,4 @@ interface Props {
 const { t, class: cls } = Astro.props;
 ---
 
-<span data-l="en" lang="en" class={cls}>{t.en}</span><span data-l="ru" lang="ru" class={cls}>{t.ru}</span>
+<span data-l="en" lang="en" class={cls}>{typoEn(t.en)}</span><span data-l="ru" lang="ru" class={cls}>{typoRu(t.ru)}</span>

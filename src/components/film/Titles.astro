@@ -1,0 +1,117 @@
+---
+/**
+ * Opening titles: black screen, one letterboxed 2.39:1 frame, the name as an optical title.
+ * If src/assets/video/hero.mp4 (and optionally hero.webm) exists, a muted loop plays over
+ * the still once the page has loaded and only when motion is welcome.
+ */
+import '../../styles/titles.css';
+import Frame from '../Frame.astro';
+import Letters from '../Letters.astro';
+import LangToggle from '../LangToggle.astro';
+import T from '../T.astro';
+import { person, titles } from '../../data/copy';
+import { chapters } from '../../data/film';
+
+const videos = import.meta.glob<{ default: string }>('../../assets/video/hero.{mp4,webm}', {
+  eager: true,
+  query: '?url',
+});
+const video = {
+  webm: Object.entries(videos).find(([p]) => p.endsWith('.webm'))?.[1].default,
+  mp4: Object.entries(videos).find(([p]) => p.endsWith('.mp4'))?.[1].default,
+};
+const hasVideo = Boolean(video.webm || video.mp4);
+---
+
+<section class="v1-hero" data-titles aria-labelledby="v1-name">
+  <header class="v1-bar v1-bar--top">
+    <p class="credit credit--sand v1-fade" style="--d:1.9s"><T t={titles.kicker} /></p>
+    <LangToggle class="v1-fade" />
+  </header>
+
+  <div class="v1-stage">
+    <Frame id="f01" slate="01" priority window move="push" />
+    {
+      hasVideo && (
+        <video class="v1-video" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-hero-video>
+          {video.webm && <source data-src={video.webm} type="video/webm" />}
+          {video.mp4 && <source data-src={video.mp4} type="video/mp4" />}
+        </video>
+      )
+    }
+    <div class="v1-veil" aria-hidden="true"></div>
+    <div class="v1-curtain" aria-hidden="true"></div>
+
+    <div class="v1-title" data-titles-name>
+      <h1 id="v1-name" class="v1-name">
+        <span data-l="en" lang="en"><Letters text={person.name.en.toUpperCase()} /></span>
+        <span data-l="ru" lang="ru"><Letters text={person.name.ru.toUpperCase()} /></span>
+      </h1>
+      <nav aria-label="Chapters">
+        <ol class="v1-billing credit">
+          {
+            chapters.map((c, i) => (
+              <li class="v1-fade" style={`--d:${(2.05 + i * 0.1).toFixed(2)}s`}>
+                <a href={`#${c.id}`}>
+                  <span class="v1-billing__n">{c.numeral}</span>
+                  <T t={c.title} />
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <footer class="v1-bar v1-bar--bottom">
+    <p class="credit v1-fade" style="--d:2.4s">
+      <T t={titles.place} /><span class="v1-dash" aria-hidden="true"></span>{titles.years}
+    </p>
+    <a class="credit v1-cue v1-fade" style="--d:2.5s" href={`#${chapters[0].id}`}>
+      <T t={titles.cue} /><span class="v1-cue__line" aria-hidden="true"></span>
+    </a>
+  </footer>
+</section>
+
+<script>
+  const root = document.documentElement;
+
+  // any scroll, tap or key ends the intro at once: nothing stays hidden behind an animation
+  if (root.classList.contains('motion')) {
+    const skip = () => {
+      root.classList.add('intro-skip');
+      events.forEach((e) => window.removeEventListener(e, skip));
+    };
+    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
+    events.forEach((e) => window.addEventListener(e, skip, { passive: true }));
+    window.setTimeout(() => events.forEach((e) => window.removeEventListener(e, skip)), 5000);
+  }
+
+  // the loop is fetched only after the page has loaded, and only when motion is welcome
+  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+  if (video && root.classList.contains('motion')) {
+    const start = () => {
+      video.querySelectorAll<HTMLSourceElement>('source[data-src]').forEach((s) => (s.src = s.dataset.src!));
+      video.load();
+      video.addEventListener('canplay', () => {
+        video.play().then(
+          () => video.classList.add('is-playing'),
+          () => {
+            /* autoplay refused (data saver, low power): the still stays */
+          },
+        );
+      }, { once: true });
+    };
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (!saveData) {
+      if (document.readyState === 'complete') window.setTimeout(start, 600);
+      else window.addEventListener('load', () => window.setTimeout(start, 600), { once: true });
+    }
+    new IntersectionObserver(([e]) => {
+      if (!video.classList.contains('is-playing')) return;
+      if (e.isIntersecting) void video.play().catch(() => {});
+      else video.pause();
+    }).observe(video);
+  }
+</script>

@@ -42,7 +42,7 @@ const variants = [
   }
   .vnav__label {
     margin: 0;
-    opacity: 0.6;
+    color: var(--dim);
   }
   .vnav__list {
     display: flex;
@@ -56,17 +56,14 @@ const variants = [
     display: inline-flex;
     gap: 0.9em;
     padding-block: 0.9rem;
-    opacity: 0.55;
-    transition: opacity 0.4s var(--ease-film);
+    color: var(--dim);
+    transition: color 0.4s var(--ease-film);
   }
   .vnav__link:hover,
   .vnav__link[aria-current='page'] {
-    opacity: 1;
-  }
-  .vnav__n {
-    color: var(--color-dune);
+    color: inherit;
   }
   .vnav__link[aria-current='page'] .vnav__n {
-    color: var(--color-sand);
+    color: var(--accent, var(--color-sand));
   }
 </style>

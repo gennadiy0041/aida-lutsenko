@@ -11,8 +11,9 @@ import Base from '../layouts/Base.astro';
 import Frame from '../components/Frame.astro';
 import LangToggle from '../components/LangToggle.astro';
 import T from '../components/T.astro';
-import VariantNav from '../components/VariantNav.astro';
-import { person, titles, chapters } from '../data/copy';
+import FilmBody from '../components/film/FilmBody.astro';
+import { person, titles } from '../data/copy';
+import { chapters } from '../data/film';
 
 const title = { en: 'Aida Lutsenko — a film in four chapters', ru: 'Аида Луценко — фильм в четырёх главах' };
 const description = {
@@ -29,8 +30,8 @@ const description = {
   theme="light"
   noindex
 >
-  <main class="v2">
-    <section class="v2-hero" aria-labelledby="v2-name">
+  <main class="v2 film film--v2" id="top">
+    <section class="v2-hero" data-titles aria-labelledby="v2-name">
       <header class="v2-bar">
         <p class="credit v2-in" style="--d:3.3s"><T t={titles.kicker} /></p>
         <LangToggle class="v2-in" />
@@ -58,29 +59,11 @@ const description = {
             ))
           }
         </ol>
-        <a class="credit v2-cue v2-in" style="--d:4.1s" href="#chapter-i"><T t={titles.cue} /><span aria-hidden="true">↓</span></a>
+        <a class="credit v2-cue v2-in" style="--d:4.1s" href="#quarry"><T t={titles.cue} /><span aria-hidden="true">↓</span></a>
       </footer>
     </section>
 
-    <section id="chapter-i" class="v2-chapter" aria-labelledby="v2-ch1">
-      <div class="v2-chapter__head">
-        <p class="credit v2-chapter__no">N° I</p>
-        <h2 id="v2-ch1" class="v2-chapter__title"><T t={{ en: 'Quarry', ru: 'Карьер' }} /></h2>
-        <p class="v2-chapter__line">
-          <T
-            t={{
-              en: 'Six years. A crew of forty-five. Almost all of them men.',
-              ru: 'Шесть лет. Сорок пять человек. Почти одни мужчины.',
-            }}
-          />
-        </p>
-      </div>
-      <div class="v2-chapter__frame">
-        <Frame id="f02" slate="02" move="pan-right" />
-      </div>
-    </section>
-
-    <VariantNav current={2} />
+    <FilmBody variant={2} />
   </main>
 </Base>
 
@@ -254,60 +237,5 @@ const description = {
   @keyframes v2-in {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-
-  /* ---------- how a chapter opens in this language ---------- */
-  .v2-chapter {
-    padding: clamp(6rem, 18svh, 12rem) 0 clamp(4rem, 10svh, 8rem);
-  }
-  .v2-chapter__head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
-    align-items: end;
-    gap: 1.5rem clamp(1.5rem, 4vw, 4rem);
-    padding-inline: var(--pad);
-  }
-  .v2-chapter__head p {
-    margin: 0;
-  }
-  .v2-chapter__no {
-    padding-bottom: 1.6em;
-    color: var(--umber) !important;
-  }
-  .v2-chapter__title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(4.5rem, 13vw, 14rem);
-    line-height: 0.86;
-    letter-spacing: -0.01em;
-    text-align: center;
-  }
-  .v2-chapter__line {
-    padding-bottom: 1.2em;
-    font-size: clamp(0.95rem, 1.1vw, 1.1rem);
-    letter-spacing: 0.02em;
-    max-width: 18rem;
-  }
-  .v2-chapter__frame {
-    width: 88vw;
-    margin: clamp(3rem, 8svh, 6rem) auto 0;
-  }
-  @media (max-width: 767px) {
-    .v2-chapter__head {
-      grid-template-columns: 1fr;
-      justify-items: start;
-    }
-    .v2-chapter__title {
-      text-align: left;
-      font-size: 24vw;
-    }
-    .v2-chapter__no {
-      padding-bottom: 0;
-    }
-    .v2-chapter__frame {
-      width: 100vw;
-    }
   }
 </style>

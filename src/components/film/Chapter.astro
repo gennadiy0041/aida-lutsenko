@@ -1,0 +1,82 @@
+---
+/**
+ * One chapter of the film: a title card, a reel of scenes (each a 2.39:1 frame with its
+ * subtitles) and the hard facts set as credits.
+ *
+ * The markup reads top to bottom as plain content. When motion is welcome, variant 1 turns
+ * the reel into a projector: the frame is held in the letterbox while the subtitles change
+ * with the scroll (see film.css, "the projector", and scripts/film.ts).
+ */
+import Frame from '../Frame.astro';
+import T from '../T.astro';
+import type { Chapter } from '../../data/film';
+
+interface Props {
+  chapter: Chapter;
+}
+const { chapter: c } = Astro.props;
+
+let beat = 0;
+const scenes = c.scenes.map((s) => ({ ...s, lines: s.lines.map((line) => ({ line, beat: beat++ })) }));
+const beats = beat;
+const two = (n: number) => String(n).padStart(2, '0');
+---
+
+<section class="ch" id={c.id} data-chapter={c.numeral} aria-labelledby={`ch-${c.id}`}>
+  <header class="ch__card">
+    <p class="credit ch__slug" data-reveal><T t={c.slug} /></p>
+    <p class="ch__numeral" aria-hidden="true" data-reveal>{c.numeral}</p>
+    <h2 class="ch__title" id={`ch-${c.id}`} data-reveal>
+      <span class="sr-only"><T t={{ en: `Chapter ${c.numeral}.`, ru: `Глава ${c.numeral}.` }} /> </span><span
+        data-l="en"
+        lang="en"
+        style={`--len:${c.title.en.length}`}>{c.title.en}</span
+      ><span data-l="ru" lang="ru" style={`--len:${c.title.ru.length}`}>{c.title.ru}</span>
+    </h2>
+    <p class="credit ch__years" data-reveal>{c.years}</p>
+  </header>
+
+  <div class="ch__reel" data-reel style={`--beats:${beats}`}>
+    <div class="ch__screen">
+      <p class="credit ch__tag" aria-hidden="true">{c.numeral}<i></i><T t={c.title} /></p>
+      {
+        scenes.map((s, si) => (
+          <div class:list={['ch__scene', si === 0 && 'is-on']} data-scene>
+            <div class="ch__frame" data-reveal="frame">
+              <Frame id={s.frame} slate={s.slate} move={s.move} window />
+            </div>
+            <div class="ch__subs">
+              {s.lines.map(({ line, beat }) => (
+                <p class:list={['ch__sub', beat === 0 && 'is-on']} data-beat={beat} data-reveal="sub">
+                  <T t={line} />
+                </p>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+      <p class="credit ch__count" aria-hidden="true"><span data-count>01</span><i></i>{two(beats)}</p>
+    </div>
+  </div>
+
+  <div class="ch__end">
+    <dl class="ch__facts">
+      {
+        c.facts.map((f) => (
+          <div class="ch__fact" data-reveal>
+            <dt class="credit"><T t={f.label} /></dt>
+            <dd><T t={f.value} /></dd>
+          </div>
+        ))
+      }
+    </dl>
+    {
+      c.link && (
+        <a class="credit ch__link" href={c.link.href} target="_blank" rel="noopener" data-reveal>
+          <T t={c.link.label} />
+          <span class="ch__arrow" aria-hidden="true" />
+        </a>
+      )
+    }
+  </div>
+</section>

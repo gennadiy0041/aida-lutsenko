@@ -1,0 +1,28 @@
+{
+  "$schema": "https://github.com/garrytan/gstack/docs/pregate.md#pregate-v1",
+  "runner": "node --test {files}",
+  "dependencies": {
+    "src/**": ["tests/site.test.mjs"],
+    "public/**": ["tests/site.test.mjs"],
+    "scripts/**": ["tests/site.test.mjs"],
+    "astro.config.mjs": ["tests/site.test.mjs"],
+    "Caddyfile": ["tests/site.test.mjs"],
+    "package.json": ["tests/site.test.mjs"],
+    "package-lock.json": ["tests/site.test.mjs"],
+    "tsconfig.json": ["tests/site.test.mjs"],
+    ".node-version": ["tests/site.test.mjs"],
+    "railway.json": ["tests/site.test.mjs"],
+    "railway.toml": ["tests/site.test.mjs"],
+    "railpack.json": ["tests/site.test.mjs"],
+    "tests/**": ["tests/rules.test.mjs", "tests/site.test.mjs"],
+    "**/*.png": [],
+    "**/*.jpg": [],
+    "**/*.jpeg": [],
+    "**/*.webp": [],
+    "**/*.avif": [],
+    "**/*.ico": [],
+    "**/*.mp4": [],
+    "**/*.webm": [],
+    "**/*.woff2": []
+  }
+}

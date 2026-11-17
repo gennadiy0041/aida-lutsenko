@@ -1,0 +1,24 @@
+---
+/** Everything after the opening titles: four chapters, end credits, the fixed line. */
+import '../../styles/film.css';
+import Chapter from './Chapter.astro';
+import Credits from './Credits.astro';
+import Hud from './Hud.astro';
+import VariantNav from '../VariantNav.astro';
+import { chapters } from '../../data/film';
+
+interface Props {
+  /** Shows the "variant n of 3" footer while the first screen is being chosen. */
+  variant?: 1 | 2 | 3;
+}
+const { variant } = Astro.props;
+---
+
+<Hud />
+{chapters.map((c) => <Chapter chapter={c} />)}
+<Credits />
+{variant && <VariantNav current={variant} />}
+
+<script>
+  import '../../scripts/film';
+</script>

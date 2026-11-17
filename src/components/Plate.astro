@@ -1,0 +1,227 @@
+---
+/**
+ * One plate of the moodboard: a photograph in a slot of fixed proportion, with its number
+ * and caption set as tiny tracked capitals.
+ * The photograph covers the slot. While the file does not exist the slot shows a coal slate
+ * with corner marks, so the layout can be judged before the pictures arrive.
+ */
+import { Picture } from 'astro:assets';
+import T from './T.astro';
+import { board, getPlate } from '../data/moodboard';
+
+type Ratio = 'scope' | 'portrait' | 'landscape' | 'square';
+
+interface Props {
+  /** 'p01' … 'p10' */
+  id: string;
+  /** Proportion of the slot. The layout decides it, not the photograph. */
+  ratio: Ratio;
+  /** Width of the slot in vw: [from 768px up, phones]. Drives `sizes` and the generated widths. */
+  vw: [number, number];
+  /** First visible plate: loaded eagerly with high priority. */
+  priority?: boolean;
+  /** 'div' when a parent figure carries one caption for several plates. */
+  as?: 'figure' | 'div';
+  /** 'full': number and caption. 'number': the number only. 'none': nothing under the slot. */
+  caption?: 'full' | 'number' | 'none';
+  class?: string;
+}
+
+const { id, ratio, vw, priority = false, as: Tag = 'figure', caption = 'full', class: cls } = Astro.props;
+const p = getPlate(id);
+
+const shapes: Record<Ratio, { w: number; h: number; label: string }> = {
+  scope: { w: 239, h: 100, label: '2.39 : 1' },
+  portrait: { w: 4, h: 5, label: '4 : 5' },
+  landscape: { w: 3, h: 2, label: '3 : 2' },
+  square: { w: 1, h: 1, label: '1 : 1' },
+};
+const shape = shapes[ratio];
+
+// A picture wider than its slot is scaled to the slot's height, so it is drawn wider than the slot.
+const cover = p.src ? Math.max(1, p.src.width / p.src.height / (shape.w / shape.h)) : 1;
+const [desk, phone] = vw.map((v) => Math.round(v * cover * 10) / 10);
+const sizes = `(max-width: 767px) ${phone}vw, ${desk}vw`;
+
+// Widths: from a small phone at 2x up to a large desktop at 2x, never above the file itself.
+const ladder = [320, 480, 640, 800, 960, 1280, 1600, 1920, 2560];
+let widths: number[] = [];
+let top = 0;
+if (p.src) {
+  const least = Math.min(desk * 10.24, phone * 7.2);
+  const most = Math.max(desk * 34.56, phone * 12.9);
+  const from = Math.max(0, ladder.findLastIndex((w) => w <= least));
+  const to = ladder.findIndex((w) => w >= most);
+  widths = ladder.slice(from, to === -1 ? ladder.length : to + 1).filter((w) => w <= p.src!.width);
+  if (widths.length === 0 || (widths.at(-1)! < most && p.src.width < 2560 && !widths.includes(p.src.width))) {
+    widths.push(p.src.width);
+  }
+  top = widths.at(-1)!;
+}
+
+const alt = p.alt ?? {
+  en: [`Plate ${p.no}`, p.caption.en].filter(Boolean).join(': '),
+  ru: [`Кадр ${p.no}`, p.caption.ru].filter(Boolean).join(': '),
+};
+const hasText = caption === 'full' && Boolean(p.caption.en || p.caption.ru);
+const Cap = Tag === 'figure' ? 'figcaption' : 'p';
+---
+
+<Tag class:list={['plate', `plate--${ratio}`, cls]} data-plate={id}>
+  <div class="plate__slot">
+    {
+      p.src ? (
+        <Picture
+          src={p.src}
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          width={top}
+          height={Math.round((top * p.src.height) / p.src.width)}
+          widths={widths}
+          sizes={sizes}
+          quality={64}
+          alt={alt.en}
+          data-alt-ru={alt.ru || undefined}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding={priority ? 'sync' : 'async'}
+          fetchpriority={priority ? 'high' : undefined}
+          class="plate__img"
+          style={p.pos ? `object-position:${p.pos}` : undefined}
+          pictureAttributes={{ class: 'plate__pic' }}
+        />
+      ) : (
+        <div class="plate__slate" aria-hidden="true">
+          <span class="plate__mark plate__mark--tl" />
+          <span class="plate__mark plate__mark--tr" />
+          <span class="plate__mark plate__mark--bl" />
+          <span class="plate__mark plate__mark--br" />
+          <span class="plate__label">
+            Plate {p.no}
+            <span class="plate__shape">
+              <i>·</i>
+              {shape.label}
+            </span>
+          </span>
+        </div>
+      )
+    }
+  </div>
+  {
+    caption !== 'none' && (
+      <Cap class="plate__cap credit" aria-hidden={Tag === 'figure' ? undefined : 'true'}>
+        <span class="plate__no">
+          <T t={board.plate} /> {p.no}
+        </span>
+        {hasText && <span class="plate__dash" aria-hidden="true" />}
+        {hasText && (
+          <span class="plate__txt">
+            <T t={p.caption} />
+          </span>
+        )}
+      </Cap>
+    )
+  }
+</Tag>
+
+<style is:global>
+  .plate {
+    --plate-umber: #6b563d;
+    margin: 0;
+    min-width: 0;
+    container-type: inline-size;
+  }
+  .plate__slot {
+    position: relative;
+    overflow: hidden;
+    container-type: inline-size;
+    background: var(--color-bone);
+  }
+  .plate--scope .plate__slot { aspect-ratio: 239 / 100; }
+  .plate--portrait .plate__slot { aspect-ratio: 4 / 5; }
+  .plate--landscape .plate__slot { aspect-ratio: 3 / 2; }
+  .plate--square .plate__slot { aspect-ratio: 1 / 1; }
+
+  .plate__pic {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .plate__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* the slate: shown until the photograph exists */
+  .plate__slate {
+    --inset: clamp(0.55rem, 4.5cqw, 1.15rem);
+    --tick: clamp(0.5rem, 4cqw, 1.1rem);
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: end center;
+    padding: var(--inset);
+    background: var(--color-coal);
+  }
+  .plate__mark {
+    position: absolute;
+    width: var(--tick);
+    height: var(--tick);
+    border: 0 solid rgb(199 173 133 / 0.45);
+  }
+  .plate__mark--tl { top: var(--inset); left: var(--inset); border-top-width: 1px; border-left-width: 1px; }
+  .plate__mark--tr { top: var(--inset); right: var(--inset); border-top-width: 1px; border-right-width: 1px; }
+  .plate__mark--bl { bottom: var(--inset); left: var(--inset); border-bottom-width: 1px; border-left-width: 1px; }
+  .plate__mark--br { bottom: var(--inset); right: var(--inset); border-bottom-width: 1px; border-right-width: 1px; }
+  .plate__label {
+    font-size: 0.625rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.34em;
+    margin-right: -0.34em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgb(199 173 133 / 0.8);
+  }
+  .plate__label i {
+    font-style: normal;
+    opacity: 0.7;
+    margin: 0 0.6em;
+  }
+  @container (max-width: 15rem) {
+    .plate__shape {
+      display: none;
+    }
+  }
+
+  /* number and caption */
+  .plate__cap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.9em;
+    margin: 0.85rem 0 0;
+    color: var(--color-ink);
+  }
+  .plate__no {
+    color: var(--plate-umber);
+    white-space: nowrap;
+  }
+  .plate__dash {
+    align-self: center;
+    width: 1.25rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.45;
+  }
+  @container (max-width: 16rem) {
+    .plate__cap {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .plate__dash {
+      display: none;
+    }
+  }
+</style>
