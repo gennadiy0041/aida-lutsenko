@@ -54,7 +54,7 @@ export const chapters: Chapter[] = [
         move: 'pan-right',
         lines: [
           { en: 'A stone quarry. A crew of 45. Almost all men.', ru: 'Каменный карьер. 45 человек. Почти одни мужчины.' },
-          { en: 'The general director is not.', ru: 'Генеральный директор — она.' },
+          { en: 'The general director is not.', ru: 'Генеральный директор — женщина.' },
         ],
       },
       {
@@ -125,7 +125,7 @@ export const chapters: Chapter[] = [
         move: 'pull',
         lines: [
           { en: 'Science does not leave a university on its own.', ru: 'Наука сама из университета не выйдет.' },
-          { en: 'The Commercialization Office. Hers since September 2025.', ru: 'Офис коммерциализации. С сентября 2025 года — её.' },
+          { en: 'The Commercialization Office. Director since September 2025.', ru: 'Офис коммерциализации. Директор — с сентября 2025 года.' },
           { en: 'Science in. Partnerships out.', ru: 'На входе — наука. На выходе — партнёрства.' },
         ],
       },
@@ -159,7 +159,7 @@ export const chapters: Chapter[] = [
         move: 'push',
         lines: [
           { en: 'The clock starts. An MVP is due before it stops.', ru: 'Время пошло. MVP нужен раньше, чем оно выйдет.' },
-          { en: 'She builds it with Gennadii Kozlov. Its name: Overrule.', ru: 'Вместе с Геннадием Козловым она успевает. Это Overrule.' },
+          { en: 'Twenty-four hours later, the MVP works. Its name: Overrule.', ru: 'Через 24 часа MVP работает. Это Overrule.' },
           { en: 'It trains people to catch AI’s mistakes in work documents.', ru: 'Тренажёр: учит ловить ошибки ИИ в рабочих документах.' },
         ],
       },
@@ -169,7 +169,7 @@ export const chapters: Chapter[] = [
         move: 'pan-left',
         lines: [
           { en: 'Top 10 in the final. Next: IVL Cup 2026, application submitted.', ru: 'Топ-10 финала. Дальше — IVL Cup 2026: заявка подана.' },
-          { en: 'She vibe-codes. This crew is almost all AI tools.', ru: 'Она вайб-кодит. В команде — почти одни ИИ-инструменты.' },
+          { en: 'New material. Same job: take it to market.', ru: 'Материал новый. Работа та же — довести до рынка.' },
         ],
       },
     ],

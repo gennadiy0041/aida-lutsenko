@@ -79,8 +79,8 @@ export const frameDefs: FrameDef[] = [
   {
     id: 'f05',
     alt: {
-      en: 'Aida in a headscarf and sunglasses, desert cliffs behind her',
-      ru: 'Аида в платке и тёмных очках, за ней скалы пустыни',
+      en: 'Aida in a headscarf and sunglasses, desert cliffs behind',
+      ru: 'Аида в платке и тёмных очках, позади — скалы пустыни',
     },
     posTall: '38% 50%',
     move: 'push',
@@ -122,7 +122,7 @@ export const frameDefs: FrameDef[] = [
   {
     id: 'f10',
     alt: {
-      en: 'Aida walks away down a stone path into a desert valley, her scarf in the wind',
+      en: 'Aida walks away down a stone path into a desert valley, scarf in the wind',
       ru: 'Аида уходит по каменной дорожке в долину, платок развевается на ветру',
     },
     posTall: '50% 42%',

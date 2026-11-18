@@ -62,8 +62,8 @@ const defs: PlateDef[] = [
     id: 'p02',
     caption: { en: 'Veil and glass', ru: 'Платок и стекло' },
     alt: {
-      en: 'Aida in a pale abaya, headscarf and sunglasses; desert cliffs behind her',
-      ru: 'Аида в светлой абайе, платке и тёмных очках; за ней скалы пустыни',
+      en: 'Aida in a pale abaya, headscarf and sunglasses; desert cliffs behind',
+      ru: 'Аида в светлой абайе, платке и тёмных очках; позади — скалы пустыни',
     },
     pos: '40% 40%',
   },
